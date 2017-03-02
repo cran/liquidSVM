@@ -59,7 +59,9 @@ void ddump(char* input);
 void ddump(bool input);
 void ddump(int input);
 void ddump(unsigned input);
-void ddump(size_t input);
+#ifdef OWN_DEVELOP__
+	void ddump(size_t input);
+#endif
 void ddump(float input);
 void ddump(double input);
 void ddump(double* pointer);

@@ -79,6 +79,8 @@ extern "C" const char* liquid_svm_default_params(int stage, int solver){
 		return "Compiled with SSE2__ and no AVX__";
 #elif defined(AVX__)
 		return "Compiled with no SSE2__ but AVX__";
+#else
+		return "";
 #endif
 		break;
 	default:
@@ -560,7 +562,7 @@ extern "C" void liquid_svm_clean(int cookie)
 		SVM->clear();
 		delete SVM;
 		cookies.erase(cookie);
-		cookies_config.erase(cookie);
+		deleteConfig(cookie);
     }
   }catch(...){
     warning("\nShould not happen!! liquid_svm_R_clean\n");

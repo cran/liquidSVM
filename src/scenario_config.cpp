@@ -673,6 +673,12 @@ Tconfig* getConfig(int cookie){
 	}
 	return cookies_config[cookie];
 };
+void deleteConfig(int cookie){
+	if(cookies_config.find(cookie) != cookies_config.end()){
+		delete cookies_config[cookie];
+		cookies_config.erase(cookie);
+	}
+}
 
 extern "C" void liquid_svm_set_scenario(int cookie, int scenario, string param){
 	getConfig(cookie)->set_scenario(scenario, param);

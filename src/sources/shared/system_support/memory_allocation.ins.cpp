@@ -89,9 +89,9 @@ template <typename Template_type> void my_dealloc_ALGD_return_to_OS(Template_typ
 {
 	my_dealloc_ALGD(pointer);
 
-#if defined __linux__
-	malloc_trim(0);
-#endif
+	#if defined __linux__
+		malloc_trim(0);
+	#endif
 }
 
 
@@ -125,7 +125,7 @@ template <typename Template_type> size_t allocated_memory_ALGD(Template_type* re
 template <typename Template_type> void my_alloc_ALGD(Template_type* restrict__* pointer, size_t size, size_t& used_size)
 {
 	void* ptr;
-	#ifndef _WIN32
+	#if defined(SIMD_ACTIVATED) && !defined(_WIN32)
 		int alloc_return;
 	#endif
 	
@@ -136,22 +136,26 @@ template <typename Template_type> void my_alloc_ALGD(Template_type* restrict__* 
 		return;
 	}
 	
-// 	Make sure that size of aligned vector is a multiple of the CACHELINE
 	
+// Make sure that size of aligned vector is a multiple of the CACHELINE
+// Then allocate memory and make final conversions 
+
+	ptr = NULL;
 	used_size = allocated_memory_in_bytes_ALGD(pointer, size);
 
-// 	Allocate memory
-
-	#ifndef _WIN32
-		ptr = NULL;
-		alloc_return = posix_memalign(&ptr, CACHELINE, used_size);
-		if (alloc_return != 0)
-			flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(used_size));
+	#ifdef SIMD_ACTIVATED
+		#ifndef _WIN32
+			alloc_return = posix_memalign(&ptr, CACHELINE, used_size);
+			if (alloc_return != 0)
+				flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(used_size));
+		#else
+			ptr = _aligned_malloc(used_size, size_t(CACHELINE));
+		#endif
 	#else
-		ptr = _aligned_malloc(used_size, size_t(CACHELINE));
-		if (ptr == NULL)
-			flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(used_size));
+		ptr = malloc(used_size);
 	#endif
+	if (ptr == NULL)
+		flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(used_size));
 
 	*pointer = (Template_type*) ptr;
 	used_size = used_size / sizeof(Template_type);
@@ -296,7 +300,7 @@ template <typename Template_type> unsigned allocated_memory_ALGD(Template_type* 
 template <typename Template_type> void my_alloc_ALGD(Template_type* restrict__* pointer, unsigned size, unsigned& used_size)
 {
 	void* ptr;
-	#ifndef _WIN32
+	#if defined(SIMD_ACTIVATED) && !defined(_WIN32)
 		int alloc_return;
 	#endif
 	
@@ -308,22 +312,27 @@ template <typename Template_type> void my_alloc_ALGD(Template_type* restrict__* 
 		return;
 	}
 	
-// 	Make sure that size of aligned vector is a multiple of the CACHELINE
 	
-	used_size = allocated_memory_in_bytes_ALGD(pointer, size);
-
-// 	Allocate memory
+// Make sure that size of aligned vector is a multiple of the CACHELINE
+// Then allocate memory and make final conversions 
 
 	ptr = NULL;
-	#ifndef _WIN32
-		alloc_return = posix_memalign(&ptr, CACHELINE, used_size);
-		if (alloc_return != 0)
-			flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(sizeof(Template_type) * used_size));
+	used_size = allocated_memory_in_bytes_ALGD(pointer, size);
+
+	#ifdef SIMD_ACTIVATED
+		#ifndef _WIN32
+			alloc_return = posix_memalign(&ptr, CACHELINE, used_size);
+			if (alloc_return != 0)
+				flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(used_size));
+		#else
+			ptr = _aligned_malloc(size_t(used_size), size_t(CACHELINE));
+		#endif
 	#else
-		ptr = _aligned_malloc(size_t(used_size), size_t(CACHELINE));
-		if (ptr == NULL)
-			flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(sizeof(Template_type) * used_size));
+		ptr = malloc(size_t(used_size));
 	#endif
+	if (ptr == NULL)
+		flush_exit(ERROR_OUT_OF_MEMORY, "Unsufficient memory while allocating an array of %d MB.", convert_to_MB(used_size));
+
 	*pointer = (Template_type*) ptr;
 	used_size = used_size / sizeof(Template_type);
 }

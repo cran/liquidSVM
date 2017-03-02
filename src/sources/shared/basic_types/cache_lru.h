@@ -19,16 +19,20 @@
 #if !defined (CACHE_LRU_H)
 	#define CACHE_LRU_H
 
+	
+
+#include "sources/shared/system_support/compiler_specifics.h"
  
  
 #include <list>
 using namespace std;
 
-#if defined _WIN32 || defined __MACH__
-	#include <unordered_map>
-#else
+
+#ifdef USE_TR1_CODE
 	#include <tr1/unordered_map>
-	using namespace std::tr1;
+	using namespace std::tr1; 
+#else
+	#include <unordered_map>
 #endif
 
 

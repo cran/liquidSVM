@@ -48,7 +48,7 @@ More detailed information can be found in the [documentation](documentation.html
 
 To install and load the library, start an R session and type
 ```r
-install.packages("liquidSVM",repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages("liquidSVM")
 library(liquidSVM)
 ```
 **LS-Regression:** 
@@ -119,13 +119,12 @@ errors(model$last_result)
 
 Download and installation can be done from a running R session by
 ```r
-install.packages("liquidSVM", repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages("liquidSVM")
 ```
 
 If you have CUDA installed e.g. on path `/usr/local/cuda` you can activate GPU support at installation by
 ```r
-install.packages('liquidSVM',configure.args="native /usr/local/cuda",
-repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages('liquidSVM',configure.args="native /usr/local/cuda")
 ```
 At the moment this is not tested on Windows!
 

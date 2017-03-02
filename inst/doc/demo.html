@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philipp Thomann &amp; Ingo Steinwart" />
 
-<meta name="date" content="2017-02-23" />
+<meta name="date" content="2017-03-01" />
 
 <title>liquidSVM: Demo for R</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">liquidSVM: Demo for R</h1>
 <h4 class="author"><em>Philipp Thomann &amp; Ingo Steinwart</em></h4>
-<h4 class="date"><em>2017-02-23</em></h4>
+<h4 class="date"><em>2017-03-01</em></h4>
 
 
 <div id="TOC">
@@ -102,7 +102,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="liquidsvm-in-one-minute" class="section level2">
 <h2>liquidSVM in one Minute</h2>
 <p>To install and load the library, start an R session and type</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>)
 <span class="kw">library</span>(liquidSVM)</code></pre></div>
 <p><strong>LS-Regression:</strong></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load test and training data</span>
@@ -146,10 +146,9 @@ model &lt;-<span class="st"> </span><span class="kw">svm</span>(Y~., covtype, <s
 <div id="first-steps" class="section level2">
 <h2>First steps</h2>
 <p>Download and installation can be done from a running R session by</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>, <span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>)</code></pre></div>
 <p>If you have CUDA installed e.g. on path <code>/usr/local/cuda</code> you can activate GPU support at installation by</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'liquidSVM'</span>,<span class="dt">configure.args=</span><span class="st">&quot;native /usr/local/cuda&quot;</span>,
-<span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'liquidSVM'</span>,<span class="dt">configure.args=</span><span class="st">&quot;native /usr/local/cuda&quot;</span>)</code></pre></div>
 <p>At the moment this is not tested on Windows!</p>
 <p>Once the package is installed you can open the very vignette you are reading by issuing:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">'demo'</span>,<span class="dt">package=</span><span class="st">'liquidSVM'</span>)</code></pre></div>

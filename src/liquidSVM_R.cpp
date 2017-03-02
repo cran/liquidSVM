@@ -131,7 +131,7 @@ SEXP liquid_svm_R_train(SEXP cookieR, SEXP argsR){
   SEXP val_errorsR = PROTECT(allocVector(REALSXP, rows * cols));
   memcpy(REAL(val_errorsR), val_errors + k, rows * cols * sizeof(double));
 
-  delete argv;
+  delete[] argv;
   delete[] val_errors;
   
   UNPROTECT(1);
@@ -164,7 +164,7 @@ extern SEXP liquid_svm_R_select(SEXP cookieR, SEXP argsR){
   SEXP val_errorsR = PROTECT(allocVector(REALSXP, rows * cols));
   memcpy(REAL(val_errorsR), val_errors + k, rows * cols * sizeof(double));
 
-  delete val_errors;
+  delete[] val_errors;
   
   UNPROTECT(1);
   return val_errorsR;
@@ -227,8 +227,8 @@ extern SEXP liquid_svm_R_test(SEXP cookieR, SEXP argsR, SEXP test_sizeP, SEXP te
   }
   
   delete[] argv;
-  delete predictions;
-  delete error_ret;
+  delete[] predictions;
+  delete[] error_ret;
   
   UNPROTECT(1);
   return predictionsR;

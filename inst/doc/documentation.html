@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philipp Thomann &amp; Ingo Steinwart" />
 
-<meta name="date" content="2017-02-23" />
+<meta name="date" content="2017-03-01" />
 
 <title>liquidSVM: Documentation for R</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">liquidSVM: Documentation for R</h1>
 <h4 class="author"><em>Philipp Thomann &amp; Ingo Steinwart</em></h4>
-<h4 class="date"><em>2017-02-23</em></h4>
+<h4 class="date"><em>2017-03-01</em></h4>
 
 
 <div id="TOC">
@@ -109,7 +109,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>There are several options to install the package.</p>
 <div id="download-and-install-using-r" class="section level2">
 <h2>Download and Install using R</h2>
-<p>The most convenient way is to use the standard install procedure using our repository:</p>
+<p>The most convenient way is to use the standard install to get it from CRAN:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>)</code></pre></div>
+<p>You can also use our repository:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>, <span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)</code></pre></div>
 <p>Remark that in R a package can be installed either as source or binary</p>
 <dl>
@@ -130,17 +132,17 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="install-a-downloaded-package" class="section level2">
 <h2>Install a downloaded package</h2>
 <p>Download the source or binary package from <a href="http://www.isa.uni-stuttgart.de/software/" class="uri">http://www.isa.uni-stuttgart.de/software/</a>. On the command line use:</p>
-<pre><code>R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz
+<pre><code>R CMD INSTALL path-to-package/liquidSVM_1.0.1.tar.gz
 # Windows
-Rcmd INSTALL path-to-package/liquidSVM_1.0.0.zip
+Rcmd INSTALL path-to-package/liquidSVM_1.0.1.zip
 # MacOS X using Termninal
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tgz</code></pre>
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tgz</code></pre>
 <p>or in a running R session:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;path-to-package/liquidSVM_1.0.0.tar.gz&quot;</span>,<span class="dt">repos=</span><span class="ot">NULL</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;path-to-package/liquidSVM_1.0.1.tar.gz&quot;</span>,<span class="dt">repos=</span><span class="ot">NULL</span>)
 <span class="co"># Windows binary</span>
-<span class="kw">install.packages</span>(<span class="st">&quot;path-to-package/liquidSVM_1.0.0.zip&quot;</span>,<span class="dt">repos=</span><span class="ot">NULL</span>)
+<span class="kw">install.packages</span>(<span class="st">&quot;path-to-package/liquidSVM_1.0.1.zip&quot;</span>,<span class="dt">repos=</span><span class="ot">NULL</span>)
 <span class="co"># MacOS X binary</span>
-<span class="kw">install.packages</span>(<span class="st">&quot;path-to-package/liquidSVM_1.0.0.tgz&quot;</span>,<span class="dt">repos=</span><span class="ot">NULL</span>)</code></pre></div>
+<span class="kw">install.packages</span>(<span class="st">&quot;path-to-package/liquidSVM_1.0.1.tgz&quot;</span>,<span class="dt">repos=</span><span class="ot">NULL</span>)</code></pre></div>
 <p>You can use also the means of any R-IDE. E.g. in RStudio go to the menu</p>
 <pre><code>Tools &gt; Install packages...</code></pre>
 <p>Then set <code>install from</code> to <code>package archive file (.tar.gz or .tgz)</code> and choose your package and install the package.</p>
@@ -155,6 +157,9 @@ R CMD INSTALL path-to-package/liquidSVM_1.0.0.tgz</code></pre>
 <dt><code>generic</code></dt>
 <dd>compiles for a wide range of currently deployed CPUs (uses SSE). This uses <code>g++/clang++ -mtune=generic -O3</code>. Our binary packages are compiled with this configuration.
 </dd>
+<dt><code>default</code></dt>
+<dd>compiles using the default values provided by R.
+</dd>
 <dt><code>debug</code></dt>
 <dd>compiles with debugging enabled.
 </dd>
@@ -163,13 +168,13 @@ R CMD INSTALL path-to-package/liquidSVM_1.0.0.tgz</code></pre>
 </dd>
 </dl>
 <p>Additional compiler flags can be provided as well. On the command line, here are some examples:</p>
-<pre><code>R CMD INSTALL --configure-args=native path-to-package/liquidSVM_1.0.0.tar.gz
-R CMD INSTALL --configure-args=generic path-to-package/liquidSVM_1.0.0.tar.gz
-R CMD INSTALL --configure-args=&quot;empty -march=core2 -O3&quot; path-to-package/liquidSVM_1.0.0.tar.gz</code></pre>
+<pre><code>R CMD INSTALL --configure-args=native path-to-package/liquidSVM_1.0.1.tar.gz
+R CMD INSTALL --configure-args=generic path-to-package/liquidSVM_1.0.1.tar.gz
+R CMD INSTALL --configure-args=&quot;empty -march=core2 -O3&quot; path-to-package/liquidSVM_1.0.1.tar.gz</code></pre>
 <p>or in a running R session:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">configure.args=</span><span class="st">&quot;native&quot;</span>,<span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)
-<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">configure.args=</span><span class="st">&quot;generic&quot;</span>,<span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)
-<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">configure.args=</span><span class="st">&quot;empty -march=core2 -O3&quot;</span>,<span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">configure.args=</span><span class="st">&quot;native&quot;</span>)
+<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">configure.args=</span><span class="st">&quot;generic&quot;</span>)
+<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>,<span class="dt">configure.args=</span><span class="st">&quot;empty -march=core2 -O3&quot;</span>)</code></pre></div>
 <p>Under MacOS you have to add the paramter <code>type=&quot;source&quot;</code> in order to trigger compilation.</p>
 <blockquote>
 <p><strong>Hint:</strong> to see whether liquidSVM got compiled with SSE and/or AVX use:</p>
@@ -180,17 +185,17 @@ R CMD INSTALL --configure-args=&quot;empty -march=core2 -O3&quot; path-to-packag
 <h3>Windows configuration</h3>
 <p>On <strong>Windows</strong> unfortunately neither <code>--configure-args</code> nor <code>configure.args</code> have any effect. We enable compilation configuration by reading the environment variable <code>LIQUIDSVM_CONFIGURE_ARGS</code> and using it in the same way as the configure args on the other platforms (see above). So on the Windows command line use</p>
 <pre><code>set LIQUIDSVM_CONFIGURE_ARGS=native
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tar.gz
 
 set LIQUIDSVM_CONFIGURE_ARGS=empty -march=core2 -O3
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz</code></pre>
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tar.gz</code></pre>
 <p>Remark that no quotation has to be used. It is not tested whether paths with spaces will work in this setting.</p>
 <p>If you wish to install from within R you can specify the environment variable as well:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.setenv</span>(<span class="dt">LIQUIDSVM_CONFIGURE_ARGS=</span><span class="st">&quot;native&quot;</span>)
-<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>, <span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)
+<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>)
 
 <span class="kw">Sys.setenv</span>(<span class="dt">LIQUIDSVM_CONFIGURE_ARGS=</span><span class="st">&quot;empty -march=core2 -O3&quot;</span>)
-<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>, <span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)</code></pre></div>
+<span class="kw">install.packages</span>(<span class="st">&quot;liquidSVM&quot;</span>)</code></pre></div>
 <p>If you have <a href="Rtools">https://cran.r-project.org/bin/windows/Rtools/</a> installed then you should definitely try to use <code>native</code>, because on Windows we use <code>generic</code> as the default configuration even for source installs.</p>
 </div>
 <div id="common-problems" class="section level3">
@@ -199,17 +204,16 @@ R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz</code></pre>
 <li><strong>MacOS X</strong>: It seems that in some cases <code>clang++ -march=native</code> does not activate AVX even if it is available. Hence if you know it is available, use <code>configure.args=&quot;native -mavx&quot;</code> or even <code>configure.args=&quot;native -mavx2&quot;</code>.</li>
 <li><strong>Windows</strong>: On one machine <code>set LIQUIDSVM_CONFIGURE_ARGS=native</code> compiled but crashed on execution: the compiler thought that FusedMultiplyAdd was available but it was not. The solution was to <code>set LIQUIDSVM_CONFIGURE_ARGS=native -mno-fma</code></li>
 </ul>
-<p>For GCC it can help to use <code>g++ -Q --help=target -march=native ...</code> to figure out which options trigger what optimizations.</p>
+<p>For GCC it can help to use <code>g++ -Q --help=target -march=native ...</code> to figure out which options trigger what optimizations. For both GCC and clang you can also print the compilation headers by <code>g++ -march=native ... -dM -E - &lt; /dev/null | egrep &quot;SSE|AVX&quot;</code>.</p>
 </div>
 </div>
 <div id="cuda" class="section level2">
 <h2>CUDA</h2>
 <p>liquidSVM also is able to calculate the kernel on a GPU if it is compiled with CUDA-support. Since there is a big overhead in moving the kernel matrix from the GPU memory, this is most useful for problems with many feature-dimensions (see <a href="demo.html#CUDA">demo</a>)</p>
 <p>To activate CUDA support you have to specify its location (usually <code>/usr/local/cuda</code>) as a parameter to the configure arguments:</p>
-<pre><code>R CMD INSTALL --configure-args=&quot;native /my/path/to/cuda&quot; path-to-package/liquidSVM_1.0.0.tar.gz</code></pre>
+<pre><code>R CMD INSTALL --configure-args=&quot;native /my/path/to/cuda&quot; path-to-package/liquidSVM_1.0.1.tar.gz</code></pre>
 <p>or again in R</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'liquidSVM'</span>,<span class="dt">configure.args=</span><span class="st">&quot;native /my/path/to/cuda&quot;</span>,
-<span class="dt">repos=</span><span class="st">&quot;http://www.isa.uni-stuttgart.de/software/R&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'liquidSVM'</span>,<span class="dt">configure.args=</span><span class="st">&quot;native /my/path/to/cuda&quot;</span>)</code></pre></div>
 <blockquote>
 <p>Note that due to lack of testing machines this is known to work only on some Linux machines. The above instructions will probably not work on Windows!</p>
 </blockquote>

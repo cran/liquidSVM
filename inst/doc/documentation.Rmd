@@ -51,7 +51,13 @@ There are several options to install the package.
 ## Download and Install using R
 
 The most convenient way is to
-use the standard install procedure using our repository:
+use the standard install to get it from CRAN:
+
+```r
+install.packages("liquidSVM")
+```
+
+You can also use our repository:
 
 ```r
 install.packages("liquidSVM", repos="http://www.isa.uni-stuttgart.de/software/R")
@@ -88,19 +94,19 @@ under Windows/MacOS by using the parameter `type="source"`.
 Download the source or binary package from http://www.isa.uni-stuttgart.de/software/.
 On the command line use:
 ```
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tar.gz
 # Windows
-Rcmd INSTALL path-to-package/liquidSVM_1.0.0.zip
+Rcmd INSTALL path-to-package/liquidSVM_1.0.1.zip
 # MacOS X using Termninal
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tgz
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tgz
 ```
 or in a running R session:
 ```r
-install.packages("path-to-package/liquidSVM_1.0.0.tar.gz",repos=NULL)
+install.packages("path-to-package/liquidSVM_1.0.1.tar.gz",repos=NULL)
 # Windows binary
-install.packages("path-to-package/liquidSVM_1.0.0.zip",repos=NULL)
+install.packages("path-to-package/liquidSVM_1.0.1.zip",repos=NULL)
 # MacOS X binary
-install.packages("path-to-package/liquidSVM_1.0.0.tgz",repos=NULL)
+install.packages("path-to-package/liquidSVM_1.0.1.tgz",repos=NULL)
 ```
 You can use also the means of any R-IDE.
 E.g. in RStudio go to the menu
@@ -125,6 +131,9 @@ We provide the following configurations:
   : compiles for a wide range of currently deployed CPUs (uses SSE). This uses `g++/clang++ -mtune=generic -O3`.
     Our binary packages are compiled with this configuration.
 
+`default`
+  : compiles using the default values provided by R.
+
 `debug`
   : compiles with debugging enabled.
 
@@ -134,15 +143,15 @@ We provide the following configurations:
 Additional compiler flags can be provided as well. On the command line,
 here are some examples:
 ```
-R CMD INSTALL --configure-args=native path-to-package/liquidSVM_1.0.0.tar.gz
-R CMD INSTALL --configure-args=generic path-to-package/liquidSVM_1.0.0.tar.gz
-R CMD INSTALL --configure-args="empty -march=core2 -O3" path-to-package/liquidSVM_1.0.0.tar.gz
+R CMD INSTALL --configure-args=native path-to-package/liquidSVM_1.0.1.tar.gz
+R CMD INSTALL --configure-args=generic path-to-package/liquidSVM_1.0.1.tar.gz
+R CMD INSTALL --configure-args="empty -march=core2 -O3" path-to-package/liquidSVM_1.0.1.tar.gz
 ```
 or in a running R session:
 ```r
-install.packages("liquidSVM",configure.args="native",repos="http://www.isa.uni-stuttgart.de/software/R")
-install.packages("liquidSVM",configure.args="generic",repos="http://www.isa.uni-stuttgart.de/software/R")
-install.packages("liquidSVM",configure.args="empty -march=core2 -O3",repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages("liquidSVM",configure.args="native")
+install.packages("liquidSVM",configure.args="generic")
+install.packages("liquidSVM",configure.args="empty -march=core2 -O3")
 ```
 Under MacOS you have to add the paramter `type="source"` in order to trigger compilation.
 
@@ -161,10 +170,10 @@ and using it in the same way as the configure args on the other platforms (see a
 So on the Windows command line use
 ```
 set LIQUIDSVM_CONFIGURE_ARGS=native
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tar.gz
 
 set LIQUIDSVM_CONFIGURE_ARGS=empty -march=core2 -O3
-R CMD INSTALL path-to-package/liquidSVM_1.0.0.tar.gz
+R CMD INSTALL path-to-package/liquidSVM_1.0.1.tar.gz
 ```
 Remark that no quotation has to be used.
 It is not tested whether paths with spaces will work in this setting.
@@ -172,10 +181,10 @@ It is not tested whether paths with spaces will work in this setting.
 If you wish to install from within R you can specify the environment variable as well:
 ```r
 Sys.setenv(LIQUIDSVM_CONFIGURE_ARGS="native")
-install.packages("liquidSVM", repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages("liquidSVM")
 
 Sys.setenv(LIQUIDSVM_CONFIGURE_ARGS="empty -march=core2 -O3")
-install.packages("liquidSVM", repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages("liquidSVM")
 ```
 
 If you have [https://cran.r-project.org/bin/windows/Rtools/](Rtools) installed then
@@ -191,7 +200,8 @@ you should definitely try to use `native`, because on Windows we use `generic` a
     The solution was to `set LIQUIDSVM_CONFIGURE_ARGS=native -mno-fma`
 
 For GCC it can help to use `g++ -Q --help=target -march=native ...` to figure out which options
-trigger what optimizations.
+trigger what optimizations. For both GCC and clang you can also print the compilation headers by
+`g++ -march=native ... -dM -E - < /dev/null | egrep "SSE|AVX"`.
 
 
 
@@ -204,12 +214,11 @@ this is most useful for problems with many feature-dimensions (see [demo](demo.h
 To activate CUDA support you have to specify its location (usually `/usr/local/cuda`)
 as a parameter to the configure arguments:
 ```
-R CMD INSTALL --configure-args="native /my/path/to/cuda" path-to-package/liquidSVM_1.0.0.tar.gz
+R CMD INSTALL --configure-args="native /my/path/to/cuda" path-to-package/liquidSVM_1.0.1.tar.gz
 ```
 or again in R
 ```r
-install.packages('liquidSVM',configure.args="native /my/path/to/cuda",
-repos="http://www.isa.uni-stuttgart.de/software/R")
+install.packages('liquidSVM',configure.args="native /my/path/to/cuda")
 ```
 
 > Note that due to lack of testing machines this is known to work only on some Linux machines.

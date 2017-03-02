@@ -1,8 +1,8 @@
 Package: liquidSVM
 Type: Package
 Title: A Fast and Versatile SVM Package
-Version: 1.0.0
-Date: 2017-02-23
+Version: 1.0.1
+Date: 2017-03-01
 Author: Ingo Steinwart, Philipp Thomann
 Copyright: Ingo Steinwart <ingo.steinwart@mathematik.uni-stuttgart.de>,
         Philipp Thomann <philipp.thomann@mathematik.uni-stuttgart.de>,
@@ -15,13 +15,13 @@ Description: Support vector machines (SVMs) and related kernel-based learning
     speed on both small and large data sets, inclusion of a variety of different
     classification and regression scenarios, and full flexibility for experts.
 URL: http://www.isa.uni-stuttgart.de/software/R
-License: AGPL
+License: AGPL-3
 Depends: R (>= 2.12.0), methods
-Suggests: knitr, rmarkdown, e1071, deldir, testthat
+Suggests: knitr, rmarkdown, deldir, testthat
 Enhances: mlr, ParamHelpers
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
 NeedsCompilation: yes
-Packaged: 2017-02-23 20:12:12 UTC; thomapp
+Packaged: 2017-03-01 23:24:39 UTC; thomapp
 Repository: CRAN
-Date/Publication: 2017-02-24 08:31:57
+Date/Publication: 2017-03-02 14:37:42

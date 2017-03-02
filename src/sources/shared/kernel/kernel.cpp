@@ -215,8 +215,13 @@ void Tkernel::reserve_matrix(vector <double*>& rows, unsigned memory_model, bool
 {
 	unsigned i;
 	unsigned j;
+	double* dummy_ptr;
 	
 	
+	if ((kernel_control.max_row_set_size == 0) or (kernel_control.max_col_set_size == 0))
+		if (memory_model != EMPTY)
+			flush_exit(ERROR_DATA_STRUCTURE, "Memory model for kernel matrix should be EMPTY since:\nrow_size = %d\ncol_size = %d", kernel_control.max_row_set_size, kernel_control.max_col_set_size);
+		
 	clear_matrix(rows, memory_model);
 	rows.resize(kernel_control.max_row_set_size);
 
@@ -231,10 +236,7 @@ void Tkernel::reserve_matrix(vector <double*>& rows, unsigned memory_model, bool
 				break;
 			case BLOCK:
 				max_aligned_col_set_size = kernel_control.max_col_set_size;
-				if (kernel_control.max_col_set_size > 0)
-					my_alloc_ALGD(&rows[0], size_t(kernel_control.max_col_set_size) * (size_t(kernel_control.max_col_set_size) - 1) / 2);
-				else
-					my_alloc_ALGD(&rows[0], 0);
+				my_alloc_ALGD(&rows[0], size_t(kernel_control.max_col_set_size) * (size_t(kernel_control.max_col_set_size) - 1) / 2);
 				j = 0;
 				for(i=1; i<kernel_control.max_col_set_size; i++)
 				{
@@ -245,13 +247,14 @@ void Tkernel::reserve_matrix(vector <double*>& rows, unsigned memory_model, bool
 			case CACHE:
 				flush_exit(ERROR_DATA_STRUCTURE, "The kernel matrix memory model %d is not available for triangular matrices.", memory_model);
 			case EMPTY:
-				max_aligned_col_set_size = allocated_memory_ALGD(&rows[0], kernel_control.max_col_set_size);
+				max_aligned_col_set_size = allocated_memory_ALGD(&dummy_ptr, kernel_control.max_col_set_size);
 				rows.clear();
 				break;
 		}
 	else
 	{
-		max_aligned_col_set_size = allocated_memory_ALGD(&rows[0], kernel_control.max_col_set_size);
+		max_aligned_col_set_size = allocated_memory_ALGD(&dummy_ptr, kernel_control.max_col_set_size);
+		
 		switch (memory_model)
 		{
 			case LINE_BY_LINE:
@@ -405,7 +408,7 @@ void Tkernel::clear_kNN_list()
 	unsigned i;
 
 	if (kNN_list.size() != 0)
-		for(i=0;i<kernel_control.max_col_set_size;i++)
+		for(i=0;i<kNN_list.size();i++)
 			if (kNN_list[i] != NULL)
 				delete kNN_list[i];
 

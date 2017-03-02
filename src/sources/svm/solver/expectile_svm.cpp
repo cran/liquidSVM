@@ -483,6 +483,8 @@ void Texpectile_svm::core_solver(Tsvm_train_val_info& train_val_info)
 		 
 			temp_index_1 = new_best_index_1;
 			temp_index_2 = new_best_index_2; 
+			
+			changed = false;
 			compare_pair_of_indices(new_best_index_1, new_best_index_2, new_beta_1, new_gamma_1, new_beta_2, new_gamma_2, best_gain, temp_index_1, best_index_1, changed);
 			compare_pair_of_indices(new_best_index_1, new_best_index_2, new_beta_1, new_gamma_1, new_beta_2, new_gamma_2, best_gain, temp_index_1, best_index_2, changed); 
 			compare_pair_of_indices(new_best_index_1, new_best_index_2, new_beta_1, new_gamma_1, new_beta_2, new_gamma_2, best_gain, temp_index_2, best_index_1, changed);

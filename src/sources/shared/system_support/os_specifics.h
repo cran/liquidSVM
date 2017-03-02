@@ -19,7 +19,9 @@
 #if !defined (OS_SPECIFICS_H) 
 	#define OS_SPECIFICS_H
 
+	
 
+	
 //**********************************************************************************************************************************
 // Linux and Mac
 //**********************************************************************************************************************************
@@ -101,13 +103,13 @@
 
 
 //**********************************************************************************************************************************
-// Something else
+// Other Operating Systems
 //**********************************************************************************************************************************
 
 	
 #if !defined(POSIX_OS__) && !defined(_WIN32)
 	#define UNKNOWN_OS__
-	#undef  THREADING_IMPLEMENTED
+	#undef THREADING_IMPLEMENTED
 	
 // 	The following definitions are meant as safeguards. Depending on the 
 // 	situtation they may or may not be necessary.
@@ -126,6 +128,34 @@
 	#define restrict__
 #endif
 
+
+
+
+
+
+//**********************************************************************************************************************************
+// More safeguards
+//**********************************************************************************************************************************
+
+// Make sure that simd instructions are only used on systems on which we can 
+// safely alloc aligned memory. Currently, this is true for MS Windows and 
+// systems supporting POSIX with optional posix_memalign commands.
+
+
+#if defined _WIN32
+	#define SIMD_ACTIVATED
+#else
+	#include <unistd.h>
+	
+	#if defined(_POSIX_ADVISORY_INFO) && _POSIX_ADVISORY_INFO > 0
+		#define SIMD_ACTIVATED
+	#else
+		#undef SIMD_ACTIVATED
+		#undef AVX2__ 
+		#undef AVX__
+		#undef SSE2__
+	#endif
+#endif
 
 
 #endif

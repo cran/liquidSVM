@@ -110,6 +110,7 @@ inline void Tsvm_2D_solver_generic_base_name::core_solver_generic_part(Tsvm_trai
 			temp_index_1 = new_best_index_1;
 			temp_index_2 = new_best_index_2;
 			
+			changed = false;
 			compare_pair_of_indices(new_best_index_1, new_best_index_2, new_alpha_1, new_alpha_2, best_gain, temp_index_1, best_index_1, changed);
 			compare_pair_of_indices(new_best_index_1, new_best_index_2, new_alpha_1, new_alpha_2, best_gain, temp_index_1, best_index_2, changed);
 			compare_pair_of_indices(new_best_index_1, new_best_index_2, new_alpha_1, new_alpha_2, best_gain, temp_index_2, best_index_2, changed);

@@ -8,8 +8,18 @@ if [ "x$CUDA_PATH_DEFAULT" = x ]; then
   : # CUDA_PATH_DEFAULT=/usr/local/cuda
 fi
 
+LIQUID_SVM_CXX1X=`"${R_HOME}/bin/R" CMD config CXX1X`
+
 if [ x$TARGET = x ]; then
-  TARGET=native
+  case `basename $LIQUID_SVM_CXX1X` in
+  g++ | clang++ )
+    TARGET=native
+    ;;
+  *)
+    echo unknown compiler: $LIQUID_SVM_CXX1X therefore we set TARGET=default
+    TARGET=default
+    ;;
+  esac
   #TARGET=compatible
   #touch src/liquidSVM_R.cpp
 fi
@@ -20,7 +30,7 @@ fi
 
 if [ x$1 != x ]; then
 case $1 in
-native | generic | debug | empty )
+native | generic | default | debug | empty )
   TARGET=$1
   shift 1
   ;;
@@ -31,9 +41,11 @@ echo Using target: $TARGET
 echo Using further args: $@
 
 if [ $TARGET = native ]; then
-  CXX_FLAGS="-march=native -O3 $CXX_FLAGS"
+  CXX_FLAGS="-O2 -march=native $CXX_FLAGS"
 elif [ $TARGET = generic ]; then
   CXX_FLAGS="-mtune=generic -msse2 -O3 $CXX_FLAGS"
+elif [ $TARGET = default ]; then
+  CXX_FLAGS="$CXX_FLAGS"
 elif [ $TARGET = debug ]; then
   CXX_FLAGS="-mtune=generic -msse2 -g $CXX_FLAGS"
 elif [ $TARGET = empty ]; then

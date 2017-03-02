@@ -28,7 +28,14 @@ unsigned makeargs(char *name, char *args, char ***aa) {
 
 unsigned getArgs(int cookie, char *name, int stage, char ***aa){
 	char *line = (char*) liquid_svm_get_config_line(cookie, stage);
-	return makeargs(name, line+1, aa);
+	unsigned ret = makeargs(name, line+1, aa);
+	free(line);
+	return ret;
+}
+
+void freeArgs(int argc, char** argv){
+	free(argv[1]); // that was the buf above
+	free(argv);
 }
 
 
@@ -76,14 +83,23 @@ int main(int argc_main, char** argv_main){
 
 	argc = getArgs(cookie, "common", 1, &argv);
 	double* train_errs = liquid_svm_train(cookie,argc, argv);
+	freeArgs(argc,argv);
+	delete[] train_errs;
 
 	argc = getArgs(cookie, "common", 2, &argv);
 	double* select_errs = liquid_svm_select(cookie,argc, argv);
+	freeArgs(argc,argv);
+	delete[] select_errs;
 
 	argc = getArgs(cookie, "common", 3, &argv);
 	double* result = liquid_svm_test(cookie, argc, argv, test_data, test_size, dim, test_labels, &error_ret);
+	delete[] result;
+	delete[] error_ret;
+	
 	// Doing predict instead of test:
 	double* result2 = liquid_svm_test(cookie, argc, argv, test_data, test_size, dim, NULL, &error_ret);
+	delete[] result2;
+	delete[] error_ret;
 
 	liquid_svm_write_solution(cookie, "test.fsol", 0, NULL);
 
@@ -91,6 +107,11 @@ int main(int argc_main, char** argv_main){
 
 	int cookie2 = liquid_svm_read_solution(-1, "test.fsol", NULL, NULL);
 	double* result3 = liquid_svm_test(cookie2, argc, argv, test_data, test_size, dim, test_labels, &error_ret);
+	delete[] result3;
+	delete[] error_ret;
+	freeArgs(argc,argv);
+	
+	liquid_svm_clean(cookie2);
 
 }
 
