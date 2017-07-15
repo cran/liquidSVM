@@ -24,10 +24,14 @@
 #' \itemize{
 #' \item fully integrated hyper-parameter selection,
 #' \item extreme speed on both small and large data sets,
-#' \item multi-threaded,
-#' \item inclusion of a variety of different classification and regression scenarios,
-#' \item full flexibility for experts.
+#' \item full flexibility for experts, and
+#' \item inclusion of a variety of different learning scenarios:
+#' \itemize{
+#' \item multi-class classification, ROC, and Neyman-Pearson learning, and
+#' \item least-squares, quantile, and expectile regression
 #' }
+#' }
+#' \ifelse{latex}{\out{\clearpage}}{}
 #' Further information is available in the following vignettes:
 #' \tabular{ll}{
 #' \code{demo} \tab liquidSVM Demo (source, pdf)
@@ -133,11 +137,15 @@ NULL
 #' @param testdata_labels the labels used if testing is also perfomed.
 #' @param scale if \code{TRUE} scales the features in the internal representation
 #' to values between 0 and 1.
+#' @param predict.prob If \code{TRUE} then a LS-svm will be trained and
+#'   the conditional probabilities for the binary classification problems will be estimated.
+#'   This also restricts the choices of \code{mc_type} to \code{c("OvA_ls","AvA_ls")}.
 #' @return an object of type \code{svm}. Depending on the usage this object
 #' has also \code{$train_errors}, \code{$select_errors}, and \code{$last_result}
 #' properties.
 #' @export
 #' @inheritParams lsSVM
+#' @inheritParams init.liquidSVM.default
 #' @seealso \code{\link{lsSVM}}, \code{\link{mcSVM}}, \code{\link{init.liquidSVM}}, \code{\link{trainSVMs}}, \code{\link{selectSVMs}}
 #' @examples
 #' # since Species is a factor the following performs multiclass classification
@@ -149,11 +157,16 @@ NULL
 #' modelTrees <- svm(Height ~ Girth + Volume, trees)
 #' # equivalently
 #' modelTrees <- svm(trees[,c(1,3)],trees$Height)
-svm <- function(x,y, ..., do.select=TRUE, testdata=NULL, testdata_labels=NULL, d=NULL,
-                scale=TRUE
+svm <- function(x,y, ..., do.select=TRUE, testdata=NULL, testdata_labels=NULL, scenario=NULL, d=NULL,
+                scale=TRUE, predict.prob=FALSE
                 # , scenario=NULL ,useCells=F ,threads=1, gpus=0, display=0,folds=5
                 ){
-  model <- init.liquidSVM(x, y, ..., scale=scale, d=d); # , threads=threads, gpus=gpus, display=d)
+  if(predict.prob && is.null(scenario))
+    scenario <- c("MC","OvA_ls")
+  model <- init.liquidSVM(x, y, ..., scenario=scenario, scale=scale, d=d); # , threads=threads, gpus=gpus, display=d)
+  model$predict.prob <- predict.prob
+  if(predict.prob)
+    model$predict.cols <- -1L
   trainSVMs(model,do.select=do.select)
   return_with_test(model, x, y, ..., testdata=testdata, testdata_labels=testdata_labels)
 }
@@ -223,9 +236,13 @@ init.liquidSVM.formula <- function(x,y, ..., d=NULL){
 #' Unlike the specialized functions \code{qtSVM, exSVM, nplSVM} etc.
 #' this does not trigger the correct \code{select}
 #' @param useCells if \code{TRUE} partitions the problem (equivalent to \code{partition_choice=6})
+#' @param sampleWeights vector of weights for every sample or \code{NULL} (default) [currently has no effect]
+#' @param groupIds vector of integer group ids for every sample or \code{NULL} (default).
+#' If not \code{NULL} this will do group-wise folds, see \code{folds_kind='GROUPED'}.
+#' @param ids vector of integer ids for every sample or \code{NULL} (default) [currently has no effect]
 #' @export
 #' @describeIn init.liquidSVM Initialize SVM model using a data frame and a label vector
-init.liquidSVM.default <- function(x,y, scenario=NULL, useCells=NULL, ..., d=NULL){
+init.liquidSVM.default <- function(x,y, scenario=NULL, useCells=NULL, ..., sampleWeights=NULL, groupIds=NULL, ids=NULL, d=NULL){
   train <- x
   labels <- y
 #   mf <- model.frame(formula, data)
@@ -235,12 +252,33 @@ init.liquidSVM.default <- function(x,y, scenario=NULL, useCells=NULL, ..., d=NUL
   }else{
     labels <- as.numeric(labels)
   }
-
+  
+  noSamples <- if(is.null(dim(x))) length(x) else nrow(x)
+  if(length(labels) != noSamples)
+    stop('x and y do not have the same number of samples')
+  
+  failedAnnotation <- function(x, typeF=function(x) is.integer(x) || is.factor(x)){
+    if(is.null(x)) return(FALSE)
+    if(!typeF(x)) return(TRUE)
+    if(length(x) != length(labels)) return(TRUE)
+    if(any(as.numeric(x) < 0)) return(TRUE)
+    return(FALSE)
+  }
+  if(failedAnnotation(sampleWeights, typeF=is.numeric)) stop('sampleWeights has to be NULL or positive numeric of same length as labels.')
+  if(failedAnnotation(groupIds)) stop('groupIds has to be NULL or non-negative integers of same length as labels.')
+  if(failedAnnotation(ids)) stop('ids has to be NULL or non-negative integers of same length as labels.')
+  
   if(any(is.na(labels)))
     warning("Training labels have NA values, removing the corresponding samples.")
   if(any(is.na(train)))
     warning("Training data has NA values, removing the corresponding samples.")
-  val_index <- stats::complete.cases(train, labels)
+  if(!is.null(sampleWeights) && any(is.na(sampleWeights)))
+    warning("sampleWeights has NA values, removing the corresponding samples.")
+  if(!is.null(groupIds) && any(is.na(groupIds)))
+    warning("groupIds has NA values, removing the corresponding samples.")
+  if(!is.null(ids) && any(is.na(ids)))
+    warning("ids has NA values, removing the corresponding samples.")
+  val_index <- stats::complete.cases(train, labels, sampleWeights, groupIds, ids)
   train <- if(is.null(dim(train)))
     train[val_index]
   else
@@ -261,10 +299,12 @@ init.liquidSVM.default <- function(x,y, scenario=NULL, useCells=NULL, ..., d=NUL
   str(as.numeric(t(data.matrix(train))))
   }
   
+  # we do not have to transpose train since __LIQUIDSVM_DATA_BY_COLS = true
   if(any(d>=2))  ### any(), since d is NULL by default
     str(as.numeric(labels))
   cookie <- .Call('liquid_svm_R_init',
-            as.numeric(t(data.matrix(train))), as.numeric(labels),
+            as.numeric(data.matrix(train)), as.numeric(labels),
+            as.numeric(sampleWeights), as.integer(groupIds), as.integer(ids),
             PACKAGE='liquidSVM')
   
   stopifnot( is.integer(cookie) & length(cookie)==1 & cookie>=0)
@@ -273,6 +313,12 @@ init.liquidSVM.default <- function(x,y, scenario=NULL, useCells=NULL, ..., d=NUL
                           #formula=NULL, explanatory=NULL, all_vars=NULL,
                           train_data=as.data.frame(train), train_labels=labels)
   class(result) <- 'liquidSVM'
+  
+  # set default values first, they get overwritten by scenario and others
+  opts <- names(options())
+  for(o in opts[startsWith(opts, 'liquidSVM.default.')]){
+    setConfig(result, substring(o, 1+nchar('liquidSVM.default.')), getOption(o))
+  }
   
   if(is.null(scenario)){
     if(is.null(lev))
@@ -388,17 +434,18 @@ trainSVMs <- function(model, ... , solver=c("kernel.rule","ls","hinge","quantile
   if(!is.null(ret)){
     errors_labels <- c("task", "cell", "fold", "gamma", "pos_weight", "lambda", "train_error",
       "val_error", "init_iterations", "train_iterations", "val_iterations",
-      "init_iterations", "gradient_updates", "SVs")
+      "gradient_updates", "SVs")
     train_errors <- as.data.frame(matrix(ret, ncol=length(errors_labels), byrow=T))
     colnames(train_errors) <- errors_labels
     model$train_errors <- train_errors
     model$select_errors <- train_errors[NULL,]
     model$gammas <- sort(unique(train_errors$gamma))
     model$lambdas <- sort(unique(train_errors$lambda))
+    model$trained <- T
   }else{
     model$train_errors <- NULL
+    model$trained <- F
   }
-  model$trained <- T
   if(do.select != FALSE){
     if(is.logical(do.select) && do.select == TRUE){
       do.select <- NULL
@@ -455,14 +502,6 @@ selectSVMs <- function(model, command.args=NULL, ..., d=NULL, warn.suboptimal=ge
   if(any(d>=2))
     cat(args,fill = T)
   
-  if(any(args=="-d0")){
-    ### should be fixed now, will get rid of this, if this is true.
-    warning("Got argument -d0 and removing it")
-    str(args)
-    cat(get_config_line(model,2))
-    args <- args[args!="-d0"]
-  }
-  
   ret <- .Call('liquid_svm_R_select',
             as.integer(model$cookie), args , PACKAGE='liquidSVM')
   # FIXME can only use this once we figure out how to pass selected train_val_info
@@ -473,12 +512,15 @@ selectSVMs <- function(model, command.args=NULL, ..., d=NULL, warn.suboptimal=ge
   if(!is.null(ret)){
     errors_labels <- c("task", "cell", "fold", "gamma", "pos_weight", "lambda", "train_error",
                        "val_error", "init_iterations", "train_iterations", "val_iterations",
-                       "init_iterations", "gradient_updates", "SVs")
+                       "gradient_updates", "SVs")
     select_errors <- as.data.frame(matrix(ret, ncol=length(errors_labels), byrow=T))
     colnames(select_errors) <- errors_labels
     model$select_errors <- rbind(model$select_errors,select_errors)
+    model$selected <- T
+  }else{
+    model$select_errors <- NULL
+    model$selected <- F
   }
-  model$selected <- T
   
   if(all(warn.suboptimal)){
     ### give suggestions for boundary value hits
@@ -511,9 +553,10 @@ selectSVMs <- function(model, command.args=NULL, ..., d=NULL, warn.suboptimal=ge
 #' for new input features.
 #' If you have also labels consider using \code{\link{test.liquidSVM}}.
 #' 
-#' @note This only receives the first column of the test result matrix,
-#' and therefore only the prediction corresponding to the first quantile, expectile, etc.
-#' in the multi-result learning scenarios.
+#' In the multi-result learning scenarios this returns all the predictions
+#' corresponding to the different quantiles, expectiles, etc.
+#' For multi-class classification, if the model was setup with \code{predict.prob=TRUE}
+#' Then this will return only the probability columns and not the prediction.
 #' 
 #' 
 #' @param object the SVM model as returned by \code{\link{init.liquidSVM}}
@@ -536,7 +579,7 @@ selectSVMs <- function(model, command.args=NULL, ..., d=NULL, warn.suboptimal=ge
 predict.liquidSVM <- function(object, newdata, ...){
   result <- test(model=object,newdata=newdata,labels=0,...)
   if(!is.null(dim(result)))
-    return(result[,1])
+    return(result[,object$predict.cols])
   else
     return(result)
 }
@@ -644,8 +687,9 @@ test.liquidSVM <- function(model, newdata, labels=NULL, command.args=NULL, ..., 
     str(as.numeric(t(newdata)))
     str(as.numeric(labels))
   }
+  # we do not have to transpose newdata since __LIQUIDSVM_DATA_BY_COLS = true
   ret <- .Call('liquid_svm_R_test', as.integer(model$cookie), as.character(args),
-            as.integer(newdata_size), as.numeric(t(newdata)), as.numeric(labels))
+            as.integer(newdata_size), as.numeric(newdata), as.numeric(labels))
 
   stopifnot( is.numeric(ret) & !is.null(ret))
   
@@ -668,8 +712,17 @@ test.liquidSVM <- function(model, newdata, labels=NULL, command.args=NULL, ..., 
     result <- numeric(newdata_size)
     result[val_index] <- ret
     result[!val_index] <- NA
-    if( model$solver == SOLVER$HINGE & !is.null(model$levels)){
+    if( model$solver == SOLVER$HINGE && !is.null(model$levels)){
       result <- numericToFactor(result, known_levels=model$levels)
+    }
+    if(model$predict.prob){
+      if(min(result) < -1 || max(result) > 1)
+        warning('binary classification was done for labels outside -1...1?')
+      else if(min(result) >= 0)
+        warning('All probabilites are > 0.5, maybe the binary classification was not done for labels -1 and 1?')
+      result <- (cbind(-result,result)+1) / 2
+      colnames(result) <- if(is.null(model$levels))c(1,-1)else model$levels
+      model$predict.cols <- 1:2
     }
   }else{
     #str(ret)
@@ -685,16 +738,19 @@ test.liquidSVM <- function(model, newdata, labels=NULL, command.args=NULL, ..., 
       colnames(result) <- task_labels # 1:dd
       attributes(result)$task_labels <- task_labels
     }
+    if(model$predict.prob){
+      result[,model$predict.cols] <- (result[,model$predict.cols]+1) / 2
+    }
   }
+  model$last_result <- as.data.frame(result)
   if(has_labels){
     err <- matrix(error_ret,ncol = 3,byrow=TRUE,dimnames = list(NULL,c("val_error","pos_val_error","neg_val_error")))
     if(!is.null(model$levels) && length(task_labels) == nrow(err)){
       rownames(err) <- task_labels
     }
     attributes(result)$errors <- err
-    
+    attributes(model$last_result)$errors <- err
   }
-  model$last_result <- as.data.frame(result)
   result
 }
 
@@ -853,7 +909,7 @@ numericToFactor <- function(x, known_levels){
 compilationInfo <- function(){
   ret <- .Call('liquid_svm_R_default_params',
                as.integer(-1L), as.integer(0L) , PACKAGE='liquidSVM')
-  strsplit(ret, " ")[[1]]
+  ret
 }
 
 #' @export

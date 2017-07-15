@@ -39,7 +39,7 @@ NVCC= $(NVCC_PATH)/nvcc
 # The architecure flag can be set to higher values, if the hardware supports this.
 # The value below should be safe for essentially all non stone-age systems.
 
-NVCCFLAGS= -arch sm_20 -L$(CUDA_LIB_PATH) -DCOMPILE_WITH_CUDA__ -U__SSE2__ -U__AVX__ 
+NVCCFLAGS= -arch sm_30 -L$(CUDA_LIB_PATH) -DCOMPILE_WITH_CUDA__ -U__SSE2__ -U__AVX__ 
 
 
 #----------- CUDA related flags for GCC ----------------------------------------------------

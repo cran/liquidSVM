@@ -29,7 +29,7 @@ using namespace std;
 
 
 const double FRACTION_NOT_ASSIGNED = -1.0;
-enum FOLD_CREATION_TYPES {FROM_FILE, BLOCKS, ALTERNATING, RANDOM, STRATIFIED, RANDOM_SUBSET, FOLD_CREATION_TYPES_MAX};
+enum FOLD_CREATION_TYPES {FROM_FILE, BLOCKS, ALTERNATING, RANDOM, STRATIFIED, GROUPED, RANDOM_SUBSET, FOLD_CREATION_TYPES_MAX};
 
 
 //**********************************************************************************************************************************

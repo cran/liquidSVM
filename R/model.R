@@ -21,7 +21,7 @@
 #' A Reference Class to represent a liquidSVM model.
 #'
 #' @field cookie this is used in C++ to access the model in memory
-#' @importFrom methods setRefClass new
+#' @importFrom methods setRefClass new initRefFields
 liquidSVMclass <- setRefClass("liquidSVM",
   fields = list(cookie = "integer", dim="integer", train_data='data.frame', train_labels='numeric',
                 all_vars='character', explanatory='character', formula='formula', levels='ANY',
@@ -29,10 +29,13 @@ liquidSVMclass <- setRefClass("liquidSVM",
                 train_errors='data.frame', trained='logical',
                 select_errors='data.frame', selected='logical',
                 last_result='data.frame', deleted='logical',
+                predict.prob='logical',predict.cols='integer',
                 solution_aux_filename='character'),
   methods = list(
     initialize=function(...){
       trained <<- selected <<- deleted <<- FALSE
+      predict.prob <<- FALSE
+      predict.cols <<- 1L
       callSuper(...)
     },
     show=function(){
@@ -73,7 +76,7 @@ print.liquidSVM <- function(x,...){
   }
   cat("\n")
   if(nrow(model$last_result)>0){
-    cat("  has a $last_result because of automagical testing\n")
+    cat("  has a $last_result because there has been predicting or testing\n")
   }
   if(length(model$solution_aux_filename)>0){
     cat("  solution was loaded from", solution_aux_filename,fill=T)
@@ -121,7 +124,8 @@ setConfig <- function(model,name, value){
   }
   if(length(value)>1)
     value <- paste(value,collapse=" ")
-  #cat("setConfig: ", name, "to", value, fill=T)
+  name <- toupper(name)
+  # cat("setConfig: ", name, "to", value, fill=T)
   result <- .Call('liquid_svm_R_set_param',as.integer(model$cookie),
                   as.character(name), as.character(value),
                   PACKAGE='liquidSVM')
@@ -379,7 +383,7 @@ write.liquidSVM <- function(model, filename){
     return(invisible(model))
   }
   vars <- c("all_vars", "explanatory", "formula", "gammas", 
-             "lambdas", "levels", "solver")
+             "lambdas", "levels", "solver", "predict.cols", "predict.prob")
   further <- lapply(vars,function(x) get(x,envir=model))
   names(further)<-vars
   .Call('liquid_svm_R_write_solution',as.integer(model$cookie),
@@ -409,6 +413,8 @@ unserialize.liquidSVM <- function(obj,...) {
   ret$solution_aux_filename <- character(0)
   ret
 }
+
+# nocov start
 
 # #' The \code{svmSerializeHook} and \code{svmUnserializeHook} methods can be used
 # #' with \code{\link{serialize}} and \code{\link{unserialize}} as seen in the example.
@@ -443,3 +449,4 @@ svmUnserializeHook <- function(x) {
   }else
     x
 }
+# nocov end

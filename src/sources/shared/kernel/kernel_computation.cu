@@ -19,9 +19,17 @@
 #if !defined (KERNEL_COMPUTATION_GPU_CU)
 	#define KERNEL_COMPUTATION_GPU_CU
 
+
+
+
 #include "sources/shared/kernel/kernel_computation.h"
+
+
+
 #include "sources/shared/kernel/kernel.h"
 #include "sources/shared/kernel/kernel_functions.h"
+#include "sources/shared/basic_functions/flush_print.h"
+
 
 
 #include <cuda_runtime.h>
@@ -34,21 +42,20 @@ const int threads_per_block_kernel_computation = 8;
 //**********************************************************************************************************************************
 
 
-void compute_pre_kernel_on_GPU(const Tkernel& kernel)
+void compute_pre_kernel_on_GPU(Tkernel_control_GPU control)
 {
 	unsigned grid_size_x;
 	unsigned grid_size_y;
 	dim3 grid_size;
 	dim3 block_size;
-	Tkernel_control_GPU control;
 
-
-	control = kernel.kernel_control_GPU[kernel.get_thread_id()];
 
 	grid_size_x = (control.row_set_size - 1)/threads_per_block_kernel_computation + 1;
 	grid_size_y = (control.col_set_size - 1)/threads_per_block_kernel_computation + 1;
 	grid_size = dim3(grid_size_x, grid_size_y, 1);
 	block_size = dim3(threads_per_block_kernel_computation, threads_per_block_kernel_computation, 1);
+
+	flush_info(INFO_DEBUG, "\nComputing pre-kernel matrix on GPU with rows = %5d, colums = %5d, dim = %d, hier_coords = %d", control.row_set_size, control.col_set_size, control.dim, control.total_number_of_hierarchical_coordinates);
 
 	compute_pre_kernel_matrix <<< grid_size, block_size >>> (control);
 	
@@ -82,22 +89,21 @@ __global__ void compute_pre_kernel_matrix(Tkernel_control_GPU control)
 
 //**********************************************************************************************************************************
 
-void compute_kernel_on_GPU(const Tkernel& kernel)
+void compute_kernel_on_GPU(Tkernel_control_GPU control)
 {
 	unsigned grid_size_x;
 	unsigned grid_size_y;
 	dim3 grid_size;
 	dim3 block_size;
-	Tkernel_control_GPU control;
 
-
-	control = kernel.kernel_control_GPU[kernel.get_thread_id()];
-	control.gamma_factor = kernel.gamma_factor;
 
 	grid_size_x = (control.row_set_size - 1)/threads_per_block_kernel_computation + 1;
 	grid_size_y = (control.col_set_size - 1)/threads_per_block_kernel_computation + 1;
 	grid_size = dim3(grid_size_x, grid_size_y, 1);
 	block_size = dim3(threads_per_block_kernel_computation, threads_per_block_kernel_computation, 1);
+
+
+	flush_info(INFO_DEBUG, "\nComputing kernel matrix on GPU with rows = %5d, colums = %5d, dim = %d, hier_coords = %d", control.row_set_size, control.col_set_size, control.dim, control.total_number_of_hierarchical_coordinates);
 
 	compute_kernel_matrix <<< grid_size, block_size >>> (control);
 	

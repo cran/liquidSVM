@@ -5,11 +5,11 @@
 \alias{svmMulticlass}
 \title{Multiclass Classification}
 \usage{
-mcSVM(x, y, ..., mc_type = c("AvA_hinge", "OvA_ls", "OvA_hinge", "AvA_ls"),
-  do.select = TRUE)
+mcSVM(x, y, ..., predict.prob = FALSE, mc_type = c("AvA_hinge", "OvA_ls",
+  "OvA_hinge", "AvA_ls"), do.select = TRUE)
 
-svmMulticlass(x, y, ..., mc_type = c("AvA_hinge", "OvA_ls", "OvA_hinge",
-  "AvA_ls"), do.select = TRUE)
+svmMulticlass(x, y, ..., predict.prob = FALSE, mc_type = c("AvA_hinge",
+  "OvA_ls", "OvA_hinge", "AvA_ls"), do.select = TRUE)
 }
 \arguments{
 \item{x}{either a formula or the features}
@@ -20,6 +20,10 @@ If it is of type \code{liquidData} then after \code{train}ing and \code{select}i
 the model is \code{\link{test}}ed using the testing data (\code{y$test}).}
 
 \item{...}{configuration parameters, see \link{Configuration}. Can be \code{threads=2, display=1, gpus=1,} etc.}
+
+\item{predict.prob}{If \code{TRUE} then a LS-svm will be trained and
+the conditional probabilities for the binary classification problems will be estimated.
+This also restricts the choices of \code{mc_type} to \code{c("OvA_ls","AvA_ls")}.}
 
 \item{mc_type}{configures the 
 the multiclass variants for All-vs-All / One-vs-All and with hinge or least squares loss.}
@@ -59,6 +63,7 @@ then also the binary classification problems will receive the corresponding labe
 model <- mcSVM(Species ~ ., iris)
 model <- mcSVM(Species ~ ., iris, mc_type="OvA")
 model <- mcSVM(Species ~ ., iris, mc.type="AvA_hi")
+model <- mcSVM(Species ~ ., iris, predict.prob=TRUE)
 
 \dontrun{
 ## a worked example can be seen at
@@ -70,4 +75,3 @@ vignette("demo",package="liquidSVM")
 \seealso{
 \code{\link{Configuration}}
 }
-

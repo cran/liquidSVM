@@ -25,8 +25,6 @@
   #define R_Realloc(p,n,t) (t *) R_chk_realloc( (void *)(p), (size_t)((n) * sizeof(t)) )
 #endif
 
-#define MASTER_AS_FIRST_TEAM_MEMBER
-
 #define VPRINTF(message_format) va_list arguments; \
   								va_start(arguments, message_format); \
 									Rvprintf(message_format, arguments); \
@@ -52,6 +50,9 @@ extern "C" void __NOOP__(int i){ }
 
 #define COMPILE_FOR_R__
 void CheckUserInterrupt();
+
+// in R data is usually stored by columns
+#define __LIQUIDSVM_DATA_BY_COLS true
 
 #include "liquidSVM.h"
 #include "kernel_calculator.cpp"
@@ -81,7 +82,7 @@ SEXP liquid_svm_R_default_params(SEXP stage, SEXP solver){
   return mkString(liquid_svm_default_params(INTEGER(stage)[0],INTEGER(solver)[0]));
 }
   
-SEXP liquid_svm_R_init(SEXP dataR, SEXP labelsR){
+SEXP liquid_svm_R_init(SEXP dataR, SEXP labelsR, SEXP sampleWeightsR, SEXP groupIdsR, SEXP idsR){
   int size = length(labelsR);
   if(size < 1){
     error("No data");
@@ -94,13 +95,29 @@ SEXP liquid_svm_R_init(SEXP dataR, SEXP labelsR){
   }
   
   SEXP cookieR = PROTECT(allocVector(INTSXP, 1));
-  double *data, *labels;
+  double *data, *labels, *sampleWeights;
+  unsigned *groupIds, *ids;
   int *cookie;
   data = REAL(dataR);
   labels = REAL(labelsR);
+  if(length(sampleWeightsR)>0){
+    sampleWeights = REAL(sampleWeightsR);
+  }else{
+    sampleWeights = NULL;
+  }
+  if(length(groupIdsR)>0){
+    groupIds = (unsigned int *) INTEGER(groupIdsR);
+  }else{
+    groupIds = NULL;
+  }
+  if(length(idsR)>0){
+    ids = (unsigned int *) INTEGER(idsR);
+  }else{
+    ids = NULL;
+  }
   cookie = INTEGER(cookieR);
   GetRNGstate();
-  cookie[0] = liquid_svm_init(data, size, dim, labels);
+  cookie[0] = liquid_svm_init_annotated(data, size, dim, labels, sampleWeights, groupIds, ids);
   PutRNGstate();
   
   UNPROTECT(1);
@@ -219,10 +236,11 @@ extern SEXP liquid_svm_R_test(SEXP cookieR, SEXP argsR, SEXP test_sizeP, SEXP te
   rows = (int)error_ret[k++];
   if(rows!=0){
   cols = error_ret[k++];
-  SEXP error_retR = (allocVector(REALSXP, rows * cols));
+  SEXP error_retR = PROTECT(allocVector(REALSXP, rows * cols));
   memcpy(REAL(error_retR), error_ret + k, rows * cols * sizeof(double));
 
   setAttrib(predictionsR, install("error_ret"),error_retR);
+  UNPROTECT(1);
   }
   }
   
@@ -317,7 +335,7 @@ extern SEXP liquid_svm_R_get_solution(SEXP cookieR, SEXP taskR, SEXP cellR, SEXP
   Tsvm_decision_function df = liquid_svm_get_solution(asInteger(cookieR), asInteger(taskR), asInteger(cellR), asInteger(foldR));
   
   //SEXP offsetR = ScalarReal(df.offset);
-  SEXP offsetR = ScalarReal(0);
+  SEXP offsetR = PROTECT(ScalarReal(0));
   
   SEXP svR = PROTECT(allocVector(INTSXP, df.sample_number.size()));
   for(size_t i=0; i<df.sample_number.size(); i++)
@@ -333,7 +351,7 @@ extern SEXP liquid_svm_R_get_solution(SEXP cookieR, SEXP taskR, SEXP cellR, SEXP
   SET_VECTOR_ELT(retR, 0, offsetR);
   SET_VECTOR_ELT(retR, 1, svR);
   SET_VECTOR_ELT(retR, 2, coeffR);
-  UNPROTECT(3);
+  UNPROTECT(4);
   return retR;
 }
 
@@ -378,7 +396,7 @@ extern SEXP liquid_svm_R_read_solution(SEXP cookieR, SEXP filenameR){
 
 static const R_CallMethodDef R_CallDef[] = {
   CALLDEF(liquid_svm_R_default_params,2),
-  CALLDEF(liquid_svm_R_init,2),
+  CALLDEF(liquid_svm_R_init,5),
   CALLDEF(liquid_svm_R_train,2),
   CALLDEF(liquid_svm_R_select,2),
   CALLDEF(liquid_svm_R_test,5),

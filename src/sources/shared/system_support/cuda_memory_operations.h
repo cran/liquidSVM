@@ -55,4 +55,8 @@ template <typename Template_type> void copy_from_GPU(vector <Template_type>& dat
 
 #include "sources/shared/system_support/cuda_memory_operations.ins.cpp"
 
+#ifndef COMPILE_SEPERATELY__
+	#include "sources/shared/system_support/cuda_memory_operations.cpp"
+#endif
+
 #endif

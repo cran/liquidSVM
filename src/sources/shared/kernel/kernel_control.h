@@ -49,6 +49,7 @@ class Tkernel_control
 		void write_to_file(FILE *fp) const;
 		void read_hierarchical_kernel_info_from_file();
 		void write_hierarchical_kernel_info_to_file();
+		void display();
 		void clear();
 		
 		
@@ -116,46 +117,6 @@ class Tkernel_control
 };
 
 
-
-//**********************************************************************************************************************************
-
-
-struct Tkernel_control_GPU
-{
-	unsigned dim;
-	size_t size;
-	
-	unsigned row_start;
-	unsigned row_stop;
-	unsigned row_set_size;
-	
-	unsigned col_start;
-	unsigned col_stop;
-	unsigned col_set_size;
-	unsigned col_set_size_aligned;
-	
-	double* row_labels;
-	double* row_data_set;
-	
-	double* col_labels;
-	double* col_data_set;
-	
-	double kernel_offset;
-	double gamma_factor;
-	
-	unsigned kernel_type;
-	unsigned full_kernel_type;
-	
-	double* pre_kernel_matrix;
-	double* kernel_matrix;
-	
-	
-	double weights_square_sum;
-	unsigned number_of_nodes;
-	unsigned total_number_of_hierarchical_coordinates;
-	unsigned* hierarchical_coordinate_intervals;
-	double* hierarchical_weights_squared;
-};
 
 //**********************************************************************************************************************************
 

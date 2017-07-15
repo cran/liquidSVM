@@ -26,6 +26,7 @@
 #include "sources/shared/basic_types/small_ordered_index_set.h"
 #include "sources/shared/system_support/thread_manager.h"
 #include "sources/shared/kernel/kernel_control.h"
+#include "sources/shared/kernel/kernel_control_gpu.h"
 #include "sources/shared/kernel/kernel_functions.h"
 
 

@@ -36,6 +36,7 @@
 
 Tsvm_manager::Tsvm_manager()
 {
+	use_current_grid = false;
 	fp_log_train_read = NULL;
 	fp_aux_train_read = NULL;
 	fp_sol_train_read = NULL;
@@ -87,7 +88,8 @@ void Tsvm_manager::clear()
 	working_set_manager.clear();
 	decision_function_manager.clear();
 	
-	current_grids.clear();
+	if (use_current_grid == false)
+		current_grids.clear();
 	list_of_grids.clear();
 	list_of_fold_managers.clear();
 }
@@ -234,6 +236,7 @@ void Tsvm_manager::read_decision_function_manager_from_file(Tsvm_decision_functi
 	unsigned filetype;
 	unsigned dim;
 	unsigned size;
+	Tsample_file_format sample_file_format;
 	
 	
 	filename = get_filename_of_fp(fpsolread);
@@ -245,7 +248,9 @@ void Tsvm_manager::read_decision_function_manager_from_file(Tsvm_decision_functi
 	{
 		file_read(fpsolread, size);
 		file_read(fpsolread, dim);
-		data_set.read_from_file(fpsolread, CSV, size, dim);
+		file_read_eol(fpsolread);
+
+		data_set.read_from_file(fpsolread, sample_file_format, size, dim);
 		data_loaded_from_sol_file = true;
 	}
 	else
@@ -272,6 +277,7 @@ void Tsvm_manager::read_decision_function_manager_from_file(Tsvm_decision_functi
 void Tsvm_manager::write_decision_function_manager_to_file(const Tsvm_decision_function_manager& decision_function_manager, FILE* fpsolwrite)
 {
 	string filename;
+	Tsample_file_format sample_file_format;
 	unsigned filetype;
 	
 	filename = get_filename_of_fp(fpsolwrite);
@@ -283,8 +289,8 @@ void Tsvm_manager::write_decision_function_manager_to_file(const Tsvm_decision_f
 		file_write(fpsolwrite, data_set.size());
 		file_write(fpsolwrite, data_set.dim());
 		file_write_eol(fpsolwrite);
-		
-		data_set.write_to_file(fpsolwrite, CSV);
+
+		data_set.write_to_file(fpsolwrite, sample_file_format);
 	}
 	
 	file_write(fpsolwrite, scale_data);
@@ -386,6 +392,12 @@ void Tsvm_manager::train(const Ttrain_control& train_control, Tsvm_full_train_in
 	
 // Store some elementary statistics
 	
+	if (clear_previous_train_info == true)
+	{
+		full_run_info.clear();
+		svm_full_train_info.train_val_info_log.clear();
+	}
+	
 	full_run_info.number_of_tasks = working_set_manager.number_of_tasks();
 	full_run_info.total_number_of_cells = working_set_manager.total_number_of_working_sets();
 	full_run_info.number_of_cells_for_task.resize(full_run_info.number_of_tasks);
@@ -401,7 +413,7 @@ void Tsvm_manager::train(const Ttrain_control& train_control, Tsvm_full_train_in
 
 		close_file(fpauxwrite);
 	}
-	
+
 	
 // Prepare communication with filesystem and the internal storage
 	
@@ -445,9 +457,10 @@ void Tsvm_manager::train(const Ttrain_control& train_control, Tsvm_full_train_in
 		Tsvm_manager::train_control.solver_control.save_solution = train_control.store_solutions_internally;
 	}
 
-	
+
 // 	Call common train routine
 	
+	Tsvm_manager::train_control.grid_control.ignore_resize = use_current_grid;
 	train_common(svm_full_train_info, false);
 	
 	
@@ -496,7 +509,8 @@ void Tsvm_manager::select(const Tselect_control& select_control, Tsvm_full_train
 	else if (select_control.use_stored_solution == false)
 	{
 		clear_flags();
-		decision_function_manager.clear();
+		if (select_control.select_method != SELECT_ON_ENTIRE_TRAIN_SET)
+			decision_function_manager.clear();
 	}
 	
 	Tsvm_manager::select_control = select_control;
@@ -661,10 +675,16 @@ void Tsvm_manager::train_common(Tsvm_full_train_info& svm_full_train_info, bool 
 			svm_full_train_info.train_time = get_wall_time_difference(svm_full_train_info.train_time);
 
 			solver_control.set_clipping(working_set_info.max_abs_label);
+			
+			// Set some flags optimizing parallel and GPU execution
+			
 			parallel_control = train_control.parallel_control.set_to_single_threaded(working_set.size() < 500);
+			parallel_control.keep_GPU_alive_after_disconnection = true;
+			if ((select_mode == true) and (cv_control.use_stored_solution == true))
+				parallel_control.GPUs = 0;
+			
 
 			cv_manager.reserve_threads(parallel_control);
-
 			try
 			{
 				if (select_mode == false)
@@ -795,6 +815,11 @@ void Tsvm_manager::test(const Tdataset& test_set, const Ttest_control& test_cont
 	
 	
 	svm_full_test_info.test_time = get_wall_time_difference();
+	
+	if (test_set.is_unsupervised_data() == false)
+		if ((test_set.is_classification_data() == false) and (test_control.vote_control.scenario != VOTE_REGRESSION))
+			flush_exit(ERROR_DATA_STRUCTURE, "Non-classification data requires vote_scenario = %d.", VOTE_REGRESSION);
+	
 	predictions.resize(test_set.size());
 	
 	if (test_control.read_sol_select_filename.size() > 0)

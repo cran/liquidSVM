@@ -58,6 +58,9 @@ return_with_test <- function(model, formula, data, ..., testdata=NULL, testdata_
 #' in this factor. If this is the case and \code{AvA_hinge} is used,
 #' then also the binary classification problems will receive the corresponding label...
 #' 
+#' @param predict.prob If \code{TRUE} then a LS-svm will be trained and
+#'   the conditional probabilities for the binary classification problems will be estimated.
+#'   This also restricts the choices of \code{mc_type} to \code{c("OvA_ls","AvA_ls")}.
 #' @param mc_type configures the 
 #'   the multiclass variants for All-vs-All / One-vs-All and with hinge or least squares loss.
 #' @inheritParams lsSVM
@@ -70,6 +73,7 @@ return_with_test <- function(model, formula, data, ..., testdata=NULL, testdata_
 #' model <- mcSVM(Species ~ ., iris)
 #' model <- mcSVM(Species ~ ., iris, mc_type="OvA")
 #' model <- mcSVM(Species ~ ., iris, mc.type="AvA_hi")
+#' model <- mcSVM(Species ~ ., iris, predict.prob=TRUE)
 #' 
 #' \dontrun{
 #' ## a worked example can be seen at
@@ -77,8 +81,18 @@ return_with_test <- function(model, formula, data, ..., testdata=NULL, testdata_
 #' vignette("demo",package="liquidSVM")
 #' }
 #' 
-mcSVM <- function(x,y,..., mc_type=c("AvA_hinge","OvA_ls","OvA_hinge","AvA_ls"),do.select=TRUE){
+mcSVM <- function(x,y,..., predict.prob=FALSE,mc_type=c("AvA_hinge","OvA_ls","OvA_hinge","AvA_ls"),do.select=TRUE){
+  if(predict.prob){
+    if(mc_type[1] %in% c("AvA_hinge","OvA_hinge"))
+      mc_type <- 'OvA_ls'
+  }
   model <- init.liquidSVM(x,y,..., scenario=c("MC",mc_type))
+  model$predict.prob <- predict.prob
+  if(!predict.prob){
+    model$predict.cols <- 1L
+  }else{
+    model$predict.cols <- -1L
+  }
   trainSVMs(model)
   if(do.select)
     selectSVMs(model)
@@ -123,6 +137,7 @@ svmMulticlass <- mcSVM
 #'  
 nplSVM <- function(x,y,..., class=1, constraint=0.05, constraint.factors=c(3,4,6,9,12)/6,do.select=TRUE){
   model <- init.liquidSVM(x,y,..., scenario=c("NPL", class))
+  model$predict.cols <- 1:length(constraint.factors)
   trainSVMs(model)
   if(do.select)
     for(cf in constraint*constraint.factors)
@@ -165,6 +180,7 @@ nplSVM <- function(x,y,..., class=1, constraint=0.05, constraint.factors=c(3,4,6
 #'  
 rocSVM <- function(x,y,...,weight_steps=9,do.select=TRUE){
   model <- init.liquidSVM(x,y,..., scenario="ROC",weight_steps=weight_steps)
+  model$predict.cols <- 1:weight_steps
   trainSVMs(model)
   if(do.select)
     for(i in 1:weight_steps)
@@ -239,6 +255,7 @@ svmRegression <- lsSVM
 #' }
 qtSVM <- function(x,y,...,weights=c(.05,.1,.5,.9,.95),clipping=-1.0,do.select=TRUE){
   model <- init.liquidSVM(x,y,..., scenario=c("QT", clipping),weights=weights)
+  model$predict.cols <- 1:length(weights)
   trainSVMs(model)
   if(do.select)
     for(i in 1:length(weights))
@@ -275,6 +292,7 @@ svmQuantileRegression <- qtSVM
 #' }
 exSVM <- function(x,y,...,weights=c(.05,.1,.5,.9,.95),clipping=-1.0,do.select=TRUE){
   model <- init.liquidSVM(x,y,..., scenario=c("EX", clipping),weights=weights)
+  model$predict.cols <- 1:length(weights)
   trainSVMs(model)
   if(do.select)
     for(i in 1:length(weights))

@@ -39,7 +39,7 @@ class Tcommand_line_parser_svm_select : public Tcommand_line_parser
 		
 		Tselect_control select_control;
 		
-		string train_filename;
+		Tsample_file_format train_file_format;
 		
 	protected:
 		virtual void make_consistent();

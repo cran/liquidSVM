@@ -153,6 +153,8 @@ void Ttrain_val_info::read_from_file(FILE* fp)
 	file_read(fp, init_time);
 	file_read(fp, train_time);
 	file_read(fp, val_time);
+	
+	file_read(fp, numerical_instability);
 }
 
 
@@ -187,6 +189,8 @@ void Ttrain_val_info::write_to_file(FILE* fp) const
 	file_write(fp, init_time);
 	file_write(fp, train_time);
 	file_write(fp, val_time);
+	
+	file_write(fp, numerical_instability);
 }
 
 
@@ -217,6 +221,8 @@ void Ttrain_val_info::clear()
 	init_time = 0.0;
 	train_time = 0.0;
 	val_time = 0.0;
+	
+	numerical_instability = false;
 }
 
 
@@ -278,7 +284,9 @@ Ttrain_val_info Ttrain_val_info::operator + (const Ttrain_val_info& train_val_in
 	result.init_time = init_time + train_val_info.init_time;
 	result.train_time = train_time + train_val_info.train_time;
 	result.val_time = val_time + train_val_info.val_time;
-
+	
+	result.numerical_instability = numerical_instability or train_val_info.numerical_instability;
+	
 	return Ttrain_val_info(result);
 }
 
@@ -316,6 +324,8 @@ Ttrain_val_info operator * (double scalar, Ttrain_val_info train_val_info)
 	result.init_time = scalar * train_val_info.init_time;
 	result.train_time = scalar * train_val_info.train_time;
 	result.val_time = scalar * train_val_info.val_time;
+	
+	result.numerical_instability = train_val_info.numerical_instability;
 
 	return Ttrain_val_info(result);
 }
@@ -396,6 +406,8 @@ void Ttrain_val_info::copy(const Ttrain_val_info& train_val_info)
 	init_time = train_val_info.init_time;
 	train_time = train_val_info.train_time;
 	val_time = train_val_info.val_time;
+	
+	numerical_instability = train_val_info.numerical_instability;
 };
 
 
@@ -484,7 +496,7 @@ string Ttrain_val_info::displaystring_parameters(unsigned display_mode) const
 {
 	string output;
 
-	if (display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED)
+	if ((display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED) and (display_mode != TRAIN_INFO_DISPLAY_FORMAT_TIMINGS_FULL))
 	{
 		output = "g: " + number_to_string(gamma, 2);
 		if (weight_display_mode != DISPLAY_NO_WEIGHTS)
@@ -505,7 +517,7 @@ string Ttrain_val_info::displaystring_train_error(unsigned display_mode) const
 {
 	string output;
 
-	if (display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED)
+	if ((display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED) and (display_mode != TRAIN_INFO_DISPLAY_FORMAT_TIMINGS_FULL))
 	{
 		if (weight_display_mode == DISPLAY_WEIGHTS_AND_ERROR)
 		{
@@ -526,7 +538,7 @@ string Ttrain_val_info::displaystring_val_error(unsigned display_mode) const
 {
 	string output;
 	
-	if (display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED)
+	if ((display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED) and (display_mode != TRAIN_INFO_DISPLAY_FORMAT_TIMINGS_FULL))
 	{
 		if (weight_display_mode == DISPLAY_WEIGHTS_AND_ERROR)
 		{
@@ -550,7 +562,7 @@ string Ttrain_val_info::displaystring_kernel(unsigned display_mode) const
 		output = "   kt: " + pos_number_to_string(train_pre_build_time + train_build_time + train_build_transfer_time + train_kNN_build_time + val_pre_build_time + val_build_time + val_build_transfer_time, 2);
 	else
 	{
-		if (display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED)
+		if ((display_mode != TRAIN_INFO_DISPLAY_FORMAT_SUMMARIZED) and (display_mode != TRAIN_INFO_DISPLAY_FORMAT_TIMINGS_FULL))
 			output = "   ";
 		output = output + "tpt: " + pos_number_to_string(train_pre_build_time, 2);
 		output = output + "  tbt: " + pos_number_to_string(train_build_time, 2);

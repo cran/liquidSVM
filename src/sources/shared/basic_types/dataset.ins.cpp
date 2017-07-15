@@ -22,6 +22,9 @@
 #ifdef  COMPILE_WITH_CUDA__
 	#include "sources/shared/kernel/kernel_computation.h"
 	#include "sources/shared/system_support/cuda_memory_operations.h"
+	#if defined(COMPILE_SEPERATELY__CUDA)
+		#include "sources/shared/kernel/kernel_computation_joint_cpugpu.h"
+	#endif
 #endif
 
 //**********************************************************************************************************************************
@@ -89,7 +92,7 @@ inline Tsample* Tdataset::sample(unsigned index) const
 
 template <typename float_type> float_type* Tdataset::convert_to_GPU_format(unsigned start_index, unsigned end_index) const
 {
-	#if defined(COMPILE_WITH_CUDA__) && !defined(__CUDACC__)
+	#if defined(COMPILE_WITH_CUDA__) && (!defined(__CUDACC__) || defined(COMPILE_SEPERATELY__CUDA))
 		unsigned i;
 		unsigned j;
 		unsigned length;
@@ -99,7 +102,6 @@ template <typename float_type> float_type* Tdataset::convert_to_GPU_format(unsig
 
 		if (start_index > end_index)
 			flush_exit(ERROR_DATA_STRUCTURE, "Cannot convert described part of dataset to array");
-
 		else if (start_index == end_index)
 			return NULL;
 
@@ -145,6 +147,7 @@ template <typename float_type> float_type* Tdataset::upload_to_GPU(unsigned star
 		float_type* data_set;
 		float_type* data_set_on_GPU;
 
+		
 		data_set_on_GPU = NULL;
 		data_set = convert_to_GPU_format<float_type>(start_index, end_index);
 		my_alloc_GPU(&data_set_on_GPU, required_memory_on_GPU(start_index, end_index));

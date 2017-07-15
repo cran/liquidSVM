@@ -200,7 +200,7 @@ splitIt <- function(data, target, prob, size, stratified){
   
 }
 
-cvSmldata <- function(data, folds=5, stratified=NULL, target=NULL){
+cvSmldata <- function(data, folds=5, stratified=NULL, target=NULL){ # nocov start
   stopifnot(length(folds) == 1 && folds >= 2)
   n <- nrow(data)
   stopifnot(n>=folds)
@@ -252,7 +252,7 @@ cvSmldata <- function(data, folds=5, stratified=NULL, target=NULL){
       ret$target <- target
     ret
   })
-}
+} # nocov end
 
 
 #' @param data the given data set
@@ -330,7 +330,7 @@ sample.liquidData <- function(liquidData, prob=0.2, trainSize=NULL, testSize=NUL
 #' banana <- liquidData("banana-mc")
 #' print(banana)
 print.liquidData <- function(x,...){
-  cat('Smldata "', x$name, '"',sep='')
+  cat('LiquidData "', x$name, '"',sep='')
   cat(" with",nrow(x$train),"train samples and",nrow(x$test),"test samples")
   cat("\n")
   cat("  having",ncol(x$train),"columns")

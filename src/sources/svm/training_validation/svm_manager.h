@@ -76,8 +76,13 @@ class Tsvm_manager
 		void read_decision_function_manager_from_file(Tsvm_decision_function_manager& decision_function_manager, const string& filename, double& file_time);
 		void write_decision_function_manager_to_file(const Tsvm_decision_function_manager& decision_function_manager, const string& filename, double& file_time);
 	
+		
+		bool use_current_grid;
+		bool clear_previous_train_info;
 		Tfull_run_info full_run_info;
 		Tsvm_decision_function_manager decision_function_manager;
+		
+		vector < Tgrid<Tsvm_solution, Tsvm_train_val_info> > current_grids;
 		vector <vector <vector < Tgrid<Tsvm_solution, Tsvm_train_val_info> > > > list_of_grids;
 		
 	private:
@@ -121,7 +126,6 @@ class Tsvm_manager
 		Tworking_set_manager working_set_manager;
 		vector <vector <Tfold_manager> > list_of_fold_managers;
 		
-		vector < Tgrid<Tsvm_solution, Tsvm_train_val_info> > current_grids;
 		vector <vector <double> > predictions;
 		vector <vector <vector < Tsvm_train_val_info > > > list_of_select_info;
 };

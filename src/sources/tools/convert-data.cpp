@@ -29,8 +29,8 @@
 //**********************************************************************************************************************************
 
 
-unsigned const ERROR_clp_tco_p = 110;
-unsigned const ERROR_clp_tco_s = 111;
+
+unsigned const ERROR_clp_tco_s = 110;
 
 
 //**********************************************************************************************************************************
@@ -45,8 +45,7 @@ class Tcommand_line_parser_convert: public Tcommand_line_parser
 		
 		bool permute_data;
 		unsigned subset_size;
-		vector <string> filenames;
-
+		vector <Tsample_file_format> file_formats;
 
 	protected:
 		void exit_with_help();
@@ -79,23 +78,21 @@ void Tcommand_line_parser_convert::parse()
 			
 			switch(parameter_list[current_position][1])
 			{
-				case 'p':
-						permute_data = get_next_bool(ERROR_clp_tco_p);
-					break;
 				case 's':
 						subset_size = get_next_number(ERROR_clp_tco_s, 0);
+						permute_data = get_next_bool(ERROR_clp_tco_s);
 						break;
 				default:
 					Tcommand_line_parser::exit_with_help(ERROR_clp_gen_unknown_option);
 			}			
 		}
 		
-	filenames.push_back(get_next_data_filename(ERROR_clp_gen_missing_data_file_name));
-	filenames.push_back(get_next_labeled_data_filename(ERROR_clp_gen_missing_data_file_name));
+	file_formats.push_back(get_next_data_file_format(ERROR_clp_gen_missing_data_file_name));
+	file_formats.push_back(get_next_data_file_format(ERROR_clp_gen_missing_data_file_name));
 	
 	while (current_position < parameter_list_size)
 	{
-		filenames.push_back(get_next_labeled_data_filename(ERROR_clp_gen_missing_data_file_name));
+		file_formats.push_back(get_next_data_file_format(ERROR_clp_gen_missing_data_file_name));
 		current_position++;
 	}
 };
@@ -109,17 +106,17 @@ void Tcommand_line_parser_convert::exit_with_help()
 	"\n\nconvert [options] <data_file_output> <data_file1_input> [<data_file2_input> ...]\n"
 	"\nWrites the data set contained in <data_fileX_input> into"
 	"\nthe file <data_file_output>. A type conversion is performed"
-	"\naccording to the file extensions.\n"
+	"\naccording to the file extensions and the file format specifers.\n"
 	"\nAllowed extensions:\n"
-		"<data_filex_input>:  .csv, .lsv, and .uci\n"
-		"<data_file_output>:  .csv, .lsv, and .uci\n");
-
+		"<data_filex_input>:  .csv and .lsv\n"
+		"<data_file_output>:  .csv and .lsv\n");
+	display_help_file_formats();
+	
 	if (full_help == false)
 		flush_info(INFO_SILENCE, "\nOptions:");
 
 	display_help(ERROR_clp_gen_d);
 	display_help(ERROR_clp_gen_h);
-	display_help(ERROR_clp_tco_p);
 	display_help(ERROR_clp_gen_r);
 	display_help(ERROR_clp_tco_s);
 	
@@ -136,25 +133,16 @@ void Tcommand_line_parser_convert::display_help(unsigned error_code)
 {
 	Tcommand_line_parser::display_help(error_code);
 	
-	if (error_code == ERROR_clp_tco_p)
-	{
-		display_separator("-p <permute_flag>");
-		flush_info(INFO_1, 
-		"Additionally permutes the data, if <permute_flag> is set to 1.\n");
-
-		display_ranges();
-		flush_info(INFO_1, "<permute_flag>:  bool\n");
-	}
-	
-	
 	if (error_code == ERROR_clp_tco_s)
 	{
-		display_separator("-s <subset_size>");
+		display_separator("-s <subset_size> <permute_flag>");
 		flush_info(INFO_1, 
-		"Only saves a random subset of size <subset_size>, if this values is > 0.\n");
+		"Saves a subset of size <subset_size>, if this values is > 0. If <permute_flag>\n"
+		"is set, the subset is randomly chosen, otherwise, the first entries are taken.\n");
 
 		display_ranges();
-		flush_info(INFO_1, "<subset_size>:  unsigned integer\n");
+		flush_info(INFO_1, "<subset_size>:   unsigned integer\n");
+		flush_info(INFO_1, "<permute_flag>:  bool\n");
 	}
 }
 	
@@ -198,16 +186,16 @@ int main(int argc, char **argv)
 // Load datasets
 
 	data_set.enforce_ownership();
-	for (i=1; i<command_line_parser.filenames.size(); i++)
+	for (i=1; i<command_line_parser.file_formats.size(); i++)
 	{
 		read_time_tmp = get_process_time_difference();
-		data_set_tmp.read_from_file(command_line_parser.filenames[i]);
+		data_set_tmp.read_from_file(command_line_parser.file_formats[i]);
 		read_time = read_time + get_process_time_difference(read_time_tmp);
 		data_set.push_back(data_set_tmp);
 	}
 
 
-// Modify data set
+// Pick subset
 
 	if (command_line_parser.subset_size == 0)
 		subset_size = data_set.size();
@@ -217,36 +205,15 @@ int main(int argc, char **argv)
 	if (command_line_parser.permute_data == false)
 		subset_info = id_permutation(subset_size);
 	else
-		subset_info = random_subset(id_permutation(data_set.size()), subset_size);
+		subset_info = random_subset(id_permutation(data_set.size()), subset_size, command_line_parser.get_random_seed());
 
 	data_set.create_subset(data_set_final, subset_info);
-	
+
 	
 // Write dataset to file
 
-/*
-
-
-
-	if (command_line_parser.permute_data == false)
-		data_set_after_permutation = data_set;
-	else
-	{
-		permutation = random_permutation(data_set.size(), command_line_parser.get_random_seed());	
-		for (i=0; i<data_set.size(); i++)
-			data_set_after_permutation.push_back(data_set.sample(permutation[i]));
-	}
-	
-	if (command_line_parser.subset_size == 0)
-		data_set_after_permutation = data_set_after_permutation;
-	else
-	{
-		
-	}*/
-		
-
 	write_time = get_process_time_difference();
-	data_set_final.write_to_file(command_line_parser.filenames[0]);
+	data_set_final.write_to_file(command_line_parser.file_formats[0]);
 	write_time = get_process_time_difference(write_time);
 
 

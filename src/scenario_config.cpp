@@ -48,7 +48,7 @@ const char* VOTE_SCENARIO_NAMES[] = {"VOTE_CLASSIFICATION", "VOTE_REGRESSION", "
 const char* KERNEL_TYPE_NAMES[] = {"GAUSS_RBF", "POISSON", "HIERARCHICAL_GAUSS", "KERNEL_TYPES_MAX"};
 const char* KERNEL_MEMORY_MODEL_NAMES[] = {"LINE_BY_LINE", "BLOCK", "CACHE", "EMPTY", "KERNEL_MEMORY_MODELS_MAX"};
 const char* RETRAIN_METHOD_NAMES[] = {"SELECT_ON_ENTIRE_TRAIN_SET", "SELECT_ON_EACH_FOLD", "SELECT_METHODS_MAX"};
-const char* FOLDS_KIND_NAMES[] = {"FROM_FILE", "BLOCKS", "ALTERNATING", "RANDOM", "STRATIFIED", "RANDOM_SUBSET", "FOLD_CREATION_TYPES_MAX"};
+const char* FOLDS_KIND_NAMES[] = {"FROM_FILE", "BLOCKS", "ALTERNATING", "RANDOM", "STRATIFIED", "GROUPED", "RANDOM_SUBSET", "FOLD_CREATION_TYPES_MAX"};
 const char* WS_TYPE_NAMES[] = {"FULL_SET", "MULTI_CLASS_ALL_VS_ALL", "MULTI_CLASS_ONE_VS_ALL", "BOOT_STRAP", "WORKING_SET_SELECTION_TYPES_MAX"};
 const char* PARTITION_KIND_NAMES[] = {"NO_PARTITION", "RANDOM_CHUNK_BY_SIZE", "RANDOM_CHUNK_BY_NUMBER", "VORONOI_BY_RADIUS", "VORONOI_BY_SIZE", "OVERLAP_BY_SIZE", "PARTITION_TYPES_MAX"};
 
@@ -481,21 +481,19 @@ void Tconfig::set_scenario(int scenario, string param){
 				set("VOTE_TYPE", VOTE_METHOD + " " + to_string(VOTE_REGRESSION));
 				set("LOSS_TYPE", LEAST_SQUARES_LOSS);
 				set("FOLDS_KIND", RANDOM);
-			}else if(type==SVM_LS_2D){
+			}else if(type==SVM_HINGE_2D){
 				set("VOTE_TYPE", VOTE_METHOD + " " + to_string(VOTE_CLASSIFICATION));
 				set("LOSS_TYPE", CLASSIFICATION_LOSS);
 				set("CLIPPING", 1);
 				set("FOLDS_KIND", STRATIFIED);
 			}else if(type==SVM_QUANTILE){
-				set("VOTE_TYPE", VOTE_METHOD + " " + to_string(VOTE_CLASSIFICATION));
+				set("VOTE_TYPE", VOTE_METHOD + " " + to_string(VOTE_REGRESSION));
 				set("LOSS_TYPE", PINBALL_LOSS);
-				set("CLIPPING", 1);
-				set("FOLDS_KIND", STRATIFIED);
+				set("FOLDS_KIND", RANDOM);
 			}else if(type==SVM_EXPECTILE_2D){
-				set("VOTE_TYPE", VOTE_METHOD + " " + to_string(VOTE_CLASSIFICATION));
+				set("VOTE_TYPE", VOTE_METHOD + " " + to_string(VOTE_REGRESSION));
 				set("LOSS_TYPE", WEIGHTED_LEAST_SQUARES_LOSS);
-				set("CLIPPING", 1);
-				set("FOLDS_KIND", STRATIFIED);
+				set("FOLDS_KIND", RANDOM);
 			}
 			}
 
@@ -503,6 +501,9 @@ void Tconfig::set_scenario(int scenario, string param){
 		default:
 			break;
 	}
+	// overwrite FOLDS_KIND setting if samples are grouped
+	if(getI("HAS_GROUP_IDS", 0))
+		set("FOLDS_KIND", GROUPED);
 }
 
 const string Tconfig::config_line(int stage){

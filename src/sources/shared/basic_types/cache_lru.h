@@ -21,19 +21,13 @@
 
 	
 
-#include "sources/shared/system_support/compiler_specifics.h"
- 
+#include "sources/shared/basic_types/my_unordered_map_and_set.h"
+
+
  
 #include <list>
 using namespace std;
 
-
-#ifdef USE_TR1_CODE
-	#include <tr1/unordered_map>
-	using namespace std::tr1; 
-#else
-	#include <unordered_map>
-#endif
 
 
 //**********************************************************************************************************************************
@@ -69,7 +63,7 @@ class Tcache_lru
 		typedef std::list <Tlist_entry> Tlist;
 		
 		typedef std::pair <unsigned, Tlist::iterator> Thash_map_entry;
-		typedef unordered_map <unsigned, Thash_map_entry> Thash_map;
+		typedef my_unordered_map <unsigned, Thash_map_entry> Thash_map;
 		
 		inline bool exists__(unsigned key);
 		inline void update(unsigned key);

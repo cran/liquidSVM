@@ -48,10 +48,16 @@
 #' performance(pred)
 #' 
 #' ## Define a classification task
-#' task = makeClassifTask(id = "iris", data = iris, target = "Species")
+#' task <- makeClassifTask(id = "iris", data = iris, target = "Species")
 #' 
 #' ## Define the learner
 #' lrn <- makeLearner("classif.liquidSVM", display=1)
+#' model <- train(lrn,task)
+#' pred <- predict(model, task=task)
+#' performance(pred)
+#' 
+#' ## or for probabilities
+#' lrn <- makeLearner("classif.liquidSVM", display=1, predict.type='prob')
 #' model <- train(lrn,task)
 #' pred <- predict(model, task=task)
 #' performance(pred)
@@ -60,6 +66,31 @@
 #' }
 NULL
 
+commonParamSet <- function() {
+  if(!requireNamespace('mlr', quietly=TRUE)) stop("this function needs mlr to be installed")
+  if(!requireNamespace('ParamHelpers', quietly=TRUE)) stop("this function needs ParamHelpers to be installed")
+  ParamHelpers::makeParamSet(
+    ParamHelpers::makeLogicalLearnerParam(id = "scale", default = TRUE),
+    ParamHelpers::makeDiscreteLearnerParam(id = "kernel", default = "gauss_rbf",
+                                           values = c("gauss_rbf","poisson")),
+    ParamHelpers::makeIntegerLearnerParam(id = "partition_choice", default = 0, lower = 0, upper = 6),
+    ParamHelpers::makeNumericLearnerParam(id = "partition_param", default = -1,
+                                          requires = quote(partition_choice >= 1L)),
+    ParamHelpers::makeIntegerLearnerParam(id = "grid_choice", default = 0, lower = -2, upper = 2),
+    ParamHelpers::makeIntegerLearnerParam(id = "folds", default = 5, lower = 1),
+    ParamHelpers::makeNumericLearnerParam(id = "min_gamma", lower=0),
+    ParamHelpers::makeNumericLearnerParam(id = "max_gamma", lower=0,requires = quote(min_gamma <= max_gamma)),
+    ParamHelpers::makeIntegerLearnerParam(id = "gamma_steps", lower=0),
+    ParamHelpers::makeNumericLearnerParam(id = "min_lambda", lower=0),
+    ParamHelpers::makeNumericLearnerParam(id = "max_lambda", lower=0,requires = quote(min_lambda <= max_lambda)),
+    ParamHelpers::makeIntegerLearnerParam(id = "lambda_steps", lower=0),
+    ParamHelpers::makeDiscreteLearnerParam(id = "retrain_method", default = "select_on_each_fold",
+                                           values = c("select_on_entire_train_Set","select_on_each_fold")),
+    ParamHelpers::makeLogicalLearnerParam(id = "store_solutions_internally", default = TRUE),
+    ParamHelpers::makeIntegerLearnerParam(id = "display", default = getOption("liquidSVM.default.display",0), lower = 0, upper=7),
+    ParamHelpers::makeIntegerLearnerParam(id = "threads", default = getOption("liquidSVM.default.threads",0), lower = -1)
+  )
+}
 
 #' @export
 #' @rdname mlr-liquidSVM
@@ -69,23 +100,14 @@ makeRLearner.regr.liquidSVM <- function() {
   mlr::makeRLearnerRegr(
     cl = "regr.liquidSVM",
     package = "liquidSVM",
-    par.set = ParamHelpers::makeParamSet(
-      ParamHelpers::makeLogicalLearnerParam(id = "scaled", default = TRUE),
-      ParamHelpers::makeNumericLearnerParam(id = "clip", lower = -1, default = -1, ),
-      ParamHelpers::makeDiscreteLearnerParam(id = "kernel", default = "GAUSS_RBF",
-                 values = c("GAUSS_RBF","POISSON")),
-      ParamHelpers::makeIntegerLearnerParam(id = "partition_choice", default = 0, lower = 0, upper = 6),
-      ParamHelpers::makeNumericLearnerParam(id = "partition_param", default = -1,
-                requires = quote(partition_choice >= 1L)),
-      ParamHelpers::makeIntegerLearnerParam(id = "grid_choice", default = 0, lower = -2, upper = 2),
-      ParamHelpers::makeIntegerLearnerParam(id = "folds", default = 5, lower = 1),
-      ParamHelpers::makeIntegerLearnerParam(id = "display", default = 0, lower = 0, upper=7)
-    ),
+    par.set = c(commonParamSet(),ParamHelpers::makeParamSet(
+      ParamHelpers::makeNumericLearnerParam(id = "clip", lower = -1, default = -1, )
+    )),
     #par.vals = list(fit = FALSE),
     properties = c("numerics", "factors"),
     name = "Support Vector Machines",
     short.name = "liquidSVM",
-    note = "FIXME make integrated cross-validation more accessable."
+    note = "FIXME make integrated cross-validation more accessible."
   )
 }
 
@@ -117,25 +139,17 @@ makeRLearner.classif.liquidSVM <- function() {
   mlr::makeRLearnerClassif(
     cl = "classif.liquidSVM",
     package = "liquidSVM",
-    par.set = ParamHelpers::makeParamSet(
-      ParamHelpers::makeLogicalLearnerParam(id = "scaled", default = TRUE),
-      ParamHelpers::makeDiscreteLearnerParam(id = "mc_type", default = "mc_AvA", values = c("mc_AvA","mc_OvA","mc_OvA_hi")),
-      ParamHelpers::makeDiscreteLearnerParam(id = "kernel", default = "GAUSS_RBF",
-                               values = c("GAUSS_RBF","POISSON")),
-      ParamHelpers::makeIntegerLearnerParam(id = "partition_choice", default = 0, lower = 0, upper = 6),
-      ParamHelpers::makeNumericLearnerParam(id = "partition_param", default = -1,
-                              requires = quote(partition_choice >= 1L)),
-      ParamHelpers::makeIntegerLearnerParam(id = "grid_choice", default = 0, lower = -2, upper = 2),
-      ParamHelpers::makeIntegerLearnerParam(id = "folds", default = 5, lower = 1),
-      ParamHelpers::makeIntegerLearnerParam(id = "display", default = 0, lower = 0, upper=7),
+    par.set = c(commonParamSet(),ParamHelpers::makeParamSet(
+      ParamHelpers::makeDiscreteLearnerParam(id = "mc_type", default = "AvA_hinge",
+                              values =  c("AvA_hinge", "OvA_ls", "OvA_hinge", "AvA_ls")),
       ParamHelpers::makeNumericVectorLearnerParam(id = "weights", len = NA_integer_, lower = 0)
-    ),
+    )),
     #par.vals = list(fit = FALSE),
     properties = c("twoclass", "multiclass", "numerics", "factors", "prob", "class.weights"),
     class.weights.param = "weights",
     name = "Support Vector Machines",
     short.name = "liquidSVM",
-    note = "FIXME make integrated cross-validation more accessable."
+    note = "FIXME make integrated cross-validation more accessible."
   )
 }
 
@@ -148,14 +162,30 @@ trainLearner.classif.liquidSVM <- function(.learner, .task, .subset, .weights = 
   if(partition_param > 0) partition_choice <- c(partition_choice, partition_param)
   f <-  mlr::getTaskFormula(.task)
   data <- mlr::getTaskData(.task, .subset)
-  liquidSVM::mcSVM(f, data, partition_choice=partition_choice, ...)
+  predict.prob <- (.learner$predict.type=="prob")
+  liquidSVM::mcSVM(f, data, partition_choice=partition_choice, predict.prob=predict.prob, ...)
 }
 
 #' @export
 #' @rdname mlr-liquidSVM
 predictLearner.classif.liquidSVM <- function(.learner, .model, .newdata, ...) {
   if(!requireNamespace('mlr', quietly=TRUE)) stop("this function needs mlr to be installed")
-  predict.liquidSVM(.model$learner.model, newdata = .newdata, ...)
+  m <- .model$learner.model
+  ret <- predict.liquidSVM(m, newdata = .newdata, ...)
+  if(.learner$predict.type=="prob"){
+    ret <- as.matrix(ret)
+    if(all(ret>=.5))
+      warning("")
+    ws_type <- getConfig(m, "WS_TYPE")
+    if(ws_type==0){ ## binary classification
+      colnames(ret) <- .model$task.desc$class.levels
+    }else if(ws_type==2){ ## OvA
+      colnames(ret) <- .model$task.desc$class.levels
+    }else if(ws_type==1){ ## AvA
+      warning("You choose mc_type='AvA' which gives not class probabilities but comparison probabilities")
+    }
+  }
+  ret
 }
 
 

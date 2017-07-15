@@ -29,7 +29,7 @@
 #include "sources/shared/system_support/timing.h"
 #include "sources/shared/system_support/memory_allocation.h"
 
-#ifdef  COMPILE_WITH_CUDA__
+#ifdef COMPILE_WITH_CUDA__
 	#include <cuda_runtime.h>
 	#include "sources/shared/system_support/cuda_memory_operations.h"
 	#include "sources/shared/kernel/kernel_computation.h"
@@ -503,7 +503,7 @@ void Tkernel::load(const Tdataset& row_data_set, const Tdataset& col_data_set, d
 	}
 	lazy_sync_threads();
 
-	#ifdef  COMPILE_WITH_CUDA__
+	#ifdef COMPILE_WITH_CUDA__
 		if (GPUs > 0)
 		{
 			thread_id = get_thread_id();
@@ -621,20 +621,18 @@ void Tkernel::load(const Tdataset& row_data_set, const Tdataset& col_data_set, d
 			else
 			{
 				kernel_control_GPU[thread_id].total_number_of_hierarchical_coordinates = 0;
-				
+
 				flush_info(INFO_DEBUG, "\nUploading row and column data of size %d and %d to GPU %d by thread %d.", kernel_control_GPU[thread_id].row_set_size, kernel_control_GPU[thread_id].col_set_size, get_GPU_id(), thread_id);
-				
+
 				kernel_control_GPU[thread_id].row_data_set = row_data_set.upload_to_GPU<double>(kernel_control_GPU[thread_id].row_start, kernel_control_GPU[thread_id].row_stop);
 				kernel_control_GPU[thread_id].col_data_set = col_data_set.upload_to_GPU<double>(kernel_control_GPU[thread_id].col_start, kernel_control_GPU[thread_id].col_stop);
 			}
-			
-			
+		
 			cudaDeviceSynchronize();
 			lazy_sync_threads();
 		}
 	#endif
 	
-
 	pre_assign(build_time, transfer_time);
 }
 
@@ -711,6 +709,9 @@ void Tkernel::pre_assign(double& build_time, double& transfer_time)
 	unsigned i;
 	unsigned ii;
 	unsigned j;
+	#ifdef  COMPILE_WITH_CUDA__
+		unsigned thread_id;
+	#endif
 	Tthread_chunk thread_chunk;
 	
 
@@ -722,13 +723,14 @@ void Tkernel::pre_assign(double& build_time, double& transfer_time)
 	if (GPUs > 0)
 	{
 		#ifdef  COMPILE_WITH_CUDA__
+			thread_id = get_thread_id();
 			lazy_sync_threads_and_get_time_difference(build_time, build_time);
-			compute_pre_kernel_on_GPU(*this);
+			compute_pre_kernel_on_GPU(kernel_control_GPU[thread_id]);
 			lazy_sync_threads_and_get_time_difference(build_time, build_time);
 
 			lazy_sync_threads_and_get_time_difference(transfer_time, transfer_time);
 			if (kernel_control.memory_model_pre_kernel != EMPTY)
-				copy_from_GPU(pre_matrix_CPU[get_thread_id()], kernel_control_GPU[get_thread_id()].pre_kernel_matrix, kernel_control_GPU[get_thread_id()].size);
+				copy_from_GPU(pre_matrix_CPU[thread_id], kernel_control_GPU[thread_id].pre_kernel_matrix, kernel_control_GPU[thread_id].size);
 			lazy_sync_threads_and_get_time_difference(transfer_time, transfer_time);
 		#endif
 	}
@@ -778,26 +780,31 @@ void Tkernel::assign(double gamma, double& build_time, double& transfer_time, do
 	unsigned j;
 	double tmp;
 	double* pre_kernel_row_tmp;
+	#ifdef  COMPILE_WITH_CUDA__
+		unsigned thread_id;
+	#endif
 	Tthread_chunk thread_chunk;
 
-
+	
 	gamma_factor = compute_gamma_factor(kernel_control.kernel_type, gamma);
 
 	if (GPUs > 0)
 	{
 		#ifdef  COMPILE_WITH_CUDA__
+			thread_id = get_thread_id();
 			lazy_sync_threads_and_get_time_difference(transfer_time, transfer_time);
+			kernel_control_GPU[thread_id].gamma_factor = gamma_factor;
 			if (kernel_control.memory_model_pre_kernel != EMPTY)
-				copy_to_GPU(pre_matrix_CPU[get_thread_id()], kernel_control_GPU[get_thread_id()].pre_kernel_matrix, kernel_control_GPU[get_thread_id()].size);
+				copy_to_GPU(pre_matrix_CPU[thread_id], kernel_control_GPU[thread_id].pre_kernel_matrix, kernel_control_GPU[thread_id].size);
 			lazy_sync_threads_and_get_time_difference(transfer_time, transfer_time);
 
 			lazy_sync_threads_and_get_time_difference(build_time, build_time);
-			compute_kernel_on_GPU(*this);
+			compute_kernel_on_GPU(kernel_control_GPU[thread_id]);
 			lazy_sync_threads_and_get_time_difference(build_time, build_time);
 
 			lazy_sync_threads_and_get_time_difference(transfer_time, transfer_time);
 			if (kernel_control.memory_model_kernel != EMPTY)
-				copy_from_GPU(matrix_CPU[get_thread_id()], kernel_control_GPU[get_thread_id()].kernel_matrix, kernel_control_GPU[get_thread_id()].size);
+				copy_from_GPU(matrix_CPU[thread_id], kernel_control_GPU[thread_id].kernel_matrix, kernel_control_GPU[thread_id].size);
 			lazy_sync_threads_and_get_time_difference(transfer_time, transfer_time);
 		#endif
 		remainder_is_zero = false;

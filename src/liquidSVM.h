@@ -31,6 +31,7 @@ extern const char* liquid_svm_default_params(int stage, int solver);
 
 // The bindings-API to liquidSVM
 extern int liquid_svm_init(const double* data, const unsigned size, const unsigned dim, const double* labels);
+extern int liquid_svm_init_annotated(const double* data, const unsigned size, const unsigned dim, const double* labels, const double* sample_weights, const unsigned* group_ids, const unsigned* ids);
 extern double* liquid_svm_train(int cookie, const int argc, char** argv);
 extern double* liquid_svm_select(int cookie, const int argc, char** argv);
 extern double* liquid_svm_test(int cookie, const int argc, char** argv, const double* test_data, const unsigned test_size, const unsigned dim, const double* labels, double** error_ret);
@@ -46,6 +47,9 @@ extern Tsubset_info liquid_svm_get_cover(int cookie, unsigned task);
 extern Tsvm_decision_function liquid_svm_get_solution(int cookie, unsigned task, unsigned cell, unsigned fold);
 #endif
 
+extern "C" double liquid_svm_get_solution_offset(int cookie, unsigned task, unsigned cell, unsigned fold);
+extern "C" double* liquid_svm_get_solution_svs(int cookie, unsigned task, unsigned cell, unsigned fold);
+extern "C" double* liquid_svm_get_solution_coeffs(int cookie, unsigned task, unsigned cell, unsigned fold);
 
 
 #ifndef COMPILE_SEPERATELY__

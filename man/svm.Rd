@@ -5,7 +5,7 @@
 \title{Convenience function to initialize, train, select, and optionally test an SVM.}
 \usage{
 svm(x, y, ..., do.select = TRUE, testdata = NULL, testdata_labels = NULL,
-  d = NULL, scale = TRUE)
+  scenario = NULL, d = NULL, scale = TRUE, predict.prob = FALSE)
 }
 \arguments{
 \item{x}{either a formula or the features}
@@ -25,10 +25,19 @@ If this is \code{NULL} but \code{y} is of type \code{liquidData} then
 
 \item{testdata_labels}{the labels used if testing is also perfomed.}
 
+\item{scenario}{configures the model for a learning scenario:
+E.g. \code{scenario='ls', scenario='mc', scenario='npl', scenario='qt'} etc.
+Unlike the specialized functions \code{qtSVM, exSVM, nplSVM} etc.
+this does not trigger the correct \code{select}}
+
 \item{d}{level of display information}
 
 \item{scale}{if \code{TRUE} scales the features in the internal representation
 to values between 0 and 1.}
+
+\item{predict.prob}{If \code{TRUE} then a LS-svm will be trained and
+the conditional probabilities for the binary classification problems will be estimated.
+This also restricts the choices of \code{mc_type} to \code{c("OvA_ls","AvA_ls")}.}
 }
 \value{
 an object of type \code{svm}. Depending on the usage this object
@@ -62,4 +71,3 @@ modelTrees <- svm(trees[,c(1,3)],trees$Height)
 \seealso{
 \code{\link{lsSVM}}, \code{\link{mcSVM}}, \code{\link{init.liquidSVM}}, \code{\link{trainSVMs}}, \code{\link{selectSVMs}}
 }
-

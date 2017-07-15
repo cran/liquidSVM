@@ -30,8 +30,11 @@
 #include "sources/svm/command_line/command_line_parser_svm_select.h"
 #include "sources/svm/command_line/command_line_parser_svm_test.h"
 
+// in R data is usually stored by columns:
+#ifndef __LIQUIDSVM_DATA_BY_COLS
+#define __LIQUIDSVM_DATA_BY_COLS false
+#endif
 
-static Tsvm_manager* SVM;
 
 
 //**********************************************************************************************************************************
@@ -42,6 +45,10 @@ static Tsvm_manager* SVM;
 
 #ifndef warning
 #define warning(x) flush_info(x);
+#endif
+
+#ifndef CLEAR_INTERRUPT
+#define CLEAR_INTERRUPT ;
 #endif
 
 #define __DEFAULT_PARAMS_GRID__ "-g 10 .2 5 -l 10 .001 .01 -a 0 3 3"
@@ -80,7 +87,7 @@ extern "C" const char* liquid_svm_default_params(int stage, int solver){
 #elif defined(AVX__)
 		return "Compiled with no SSE2__ but AVX__";
 #else
-		return "";
+		return "Compiled without vectorization";
 #endif
 		break;
 	default:
@@ -109,8 +116,11 @@ inline Tsvm_manager* getSVMbyCookie(int cookie){
   }
 }
 
-
 extern "C" int liquid_svm_init(const double* data, const unsigned size, const unsigned dim, const double* labels)
+{
+	return liquid_svm_init_annotated(data, size, dim, labels, NULL, NULL, NULL);
+}
+extern "C" int liquid_svm_init_annotated(const double* data, const unsigned size, const unsigned dim, const double* labels, const double* sample_weights, const unsigned* group_ids, const unsigned* ids)
 {
 	if(size < 1 || dim < 1)
 	{
@@ -118,8 +128,8 @@ extern "C" int liquid_svm_init(const double* data, const unsigned size, const un
     return -1;
 	}
   try{
-  SVM = new Tsvm_manager();
-		Tdataset data_set = Tdataset(data, size, dim, labels);
+  Tsvm_manager *SVM = new Tsvm_manager();
+		Tdataset data_set = Tdataset(data, size, dim, labels, sample_weights, group_ids, ids, __LIQUIDSVM_DATA_BY_COLS);
 //		for(int i=0; i<8 && i<size; i++){
 //		  flush_info(1,"%.2f ",data_set.sample(i)->label);
 //		  for(int j=0; j<dim; j++) flush_info(1,",%.2f",data_set.sample(i)->coord(j));
@@ -131,10 +141,15 @@ extern "C" int liquid_svm_init(const double* data, const unsigned size, const un
     int cookie = ++last_id;
     cookies[cookie] = SVM;
     flush_info(INFO_DEBUG,"\nnew cookie: %d, cookies.size: %d\n",cookie, cookies.size());
+
+    if(group_ids != NULL)
+    		getConfig(cookie)->set("HAS_GROUP_IDS", 1);
+
     return cookie;
     //getSVMbyCookie(cookie[0]);
   }catch(...){
     error("\nShould not happen!! liquid_svm_init\n");
+    CLEAR_INTERRUPT
     return -1;
   }
 }
@@ -173,7 +188,6 @@ vector<double> convertValInfo(int task, int cell, int fold, Tsvm_train_val_info 
 	row.push_back(info.init_iterations);
 	row.push_back(info.train_iterations);
 	row.push_back(info.val_iterations);
-	row.push_back(info.init_iterations);
 	row.push_back(info.gradient_updates);
 	row.push_back(info.SVs);
 	return row;
@@ -187,7 +201,7 @@ extern "C" double* liquid_svm_train(int cookie, const int argc, char** argv)
 
 	if(getConfig(cookie)->getI("SCALE")>0){
 		train_control.scale_data = true;
-		flush_info(1,"Using scaling\n");
+		flush_info(2,"Using scaling\n");
 	}
 
 	train_control.store_solutions_internally = (getConfig(cookie)->getI("STORE_SOLUTIONS_INTERNALLY",
@@ -202,13 +216,14 @@ extern "C" double* liquid_svm_train(int cookie, const int argc, char** argv)
     for(int i=0; i<argc; i++) flush_info(0,"%s ",argv[i]);
     flush_info(0,"\n");
     error("liquid_svm_select problems with command args\n");
+    CLEAR_INTERRUPT
     return NULL;
   }
 
   try{
+	Tsvm_manager *SVM = getSVMbyCookie(cookie);
 	flush_info(1,"\nWelcome to SVM train (dim=%d size=%d decision_functions=%d cookie=%d)\n",SVM->dim(),SVM->size(),SVM->decision_functions_size(), cookie);
 	for(int i=0; i<argc; i++) flush_info(1,"%s ",argv[i]);
-	Tsvm_manager *SVM = getSVMbyCookie(cookie);
 
 	Tsvm_full_train_info svm_full_train_info;
 
@@ -239,6 +254,7 @@ extern "C" double* liquid_svm_train(int cookie, const int argc, char** argv)
   
   }catch(...){
     error("\nShould not happen!! liquid_svm_train\n");
+    CLEAR_INTERRUPT
   }
   return ret;
 }
@@ -259,17 +275,18 @@ extern "C" double* liquid_svm_select(int cookie, const int argc, char** argv)
     for(int i=0; i<argc; i++) flush_info(0,"%s ",argv[i]);
     flush_info(0,"\n");
     error("liquid_svm_select problems with command args\n");
+    CLEAR_INTERRUPT
     return NULL;
   }
 	
 	command_line_parser.select_control.use_stored_solution
-		= (command_line_parser.select_control.select_method==SELECT_ON_EACH_FOLD ||
+		= (command_line_parser.select_control.select_method==SELECT_ON_EACH_FOLD &&
 			getConfig(cookie)->getI("STORE_SOLUTIONS_INTERNALLY", 1) > 0);
 
   try{
+	Tsvm_manager *SVM = getSVMbyCookie(cookie);
 	flush_info(1,"\nWelcome to SVM select (dim=%d size=%d decision_functions=%d cookie=%d)\n",SVM->dim(),SVM->size(),SVM->decision_functions_size(), cookie);
 	for(int i=0; i<argc; i++) flush_info(1,"%s ",argv[i]);
-	Tsvm_manager *SVM = getSVMbyCookie(cookie);
 
 	Tsvm_full_train_info svm_full_train_info;
 
@@ -300,6 +317,7 @@ extern "C" double* liquid_svm_select(int cookie, const int argc, char** argv)
   
   }catch(...){
     error("\nShould not happen!! liquid_svm_select\n");
+    CLEAR_INTERRUPT
   }
   
   return ret;
@@ -323,6 +341,7 @@ extern "C" double* liquid_svm_test(int cookie, const int argc, char** argv, cons
     for(int i=0; i<argc; i++) flush_info(0,"%s ",argv[i]);
     flush_info(0,"\n");
     error("liquid_svm_test problems with command args\n");
+    CLEAR_INTERRUPT
     return NULL;
   }
 
@@ -334,7 +353,7 @@ extern "C" double* liquid_svm_test(int cookie, const int argc, char** argv, cons
 
 	Tsvm_full_test_info test_info;
 
-	Tdataset test_data_set = Tdataset(test_data, test_size, dim, labels);
+	Tdataset test_data_set = Tdataset(test_data, test_size, dim, labels, NULL, NULL, NULL, __LIQUIDSVM_DATA_BY_COLS);
 	test_data_set.enforce_ownership();
 	
 	SVM->test(test_data_set, command_line_parser.test_control, test_info);
@@ -407,6 +426,7 @@ extern "C" double* liquid_svm_test(int cookie, const int argc, char** argv, cons
 
   }catch(...){
     error("\nShould not happen!! liquid_svm_test\n");
+    CLEAR_INTERRUPT
     return NULL;
   }
 	
@@ -426,7 +446,8 @@ extern Tsubset_info liquid_svm_get_cover(int cookie, unsigned task)
 
   }catch(...){
     error("\nShould not happen!! liquid_svm_test\n");
-  }
+    CLEAR_INTERRUPT
+ }
   return info;
   
 }
@@ -441,9 +462,31 @@ extern Tsvm_decision_function liquid_svm_get_solution(int cookie, unsigned task,
 
   }catch(...){
     error("\nShould not happen!! liquid_svm_test\n");
+    CLEAR_INTERRUPT
   }
   return ret;
 
+}
+
+extern "C" double liquid_svm_get_solution_offset(int cookie, unsigned task, unsigned cell, unsigned fold)
+{
+//	  Tsvm_decision_function f = liquid_svm_get_solution(cookie, task, cell, fold);
+	  return 0.0;
+}
+extern "C" double* liquid_svm_get_solution_svs(int cookie, unsigned task, unsigned cell, unsigned fold)
+{
+	  Tsvm_decision_function f = liquid_svm_get_solution(cookie, task, cell, fold);
+	  vector<double> vec(f.sample_number.begin(), f.sample_number.end());
+	  vector<vector<double>> ret;
+	  ret.push_back(vec);
+	  return convertMatrixToArray(ret);
+}
+extern "C" double* liquid_svm_get_solution_coeffs(int cookie, unsigned task, unsigned cell, unsigned fold)
+{
+	  Tsvm_decision_function f = liquid_svm_get_solution(cookie, task, cell, fold);
+	  vector<vector<double>> ret;
+	  ret.push_back(f.coefficient);
+	  return convertMatrixToArray(ret);
 }
 
 
@@ -478,6 +521,7 @@ extern "C" void liquid_svm_write_solution(int cookie, const char* filename, size
 
   }catch(...){
     error("\nShould not happen!! liquid_svm_write_solution\n");
+    CLEAR_INTERRUPT
   }
 
 }
@@ -540,6 +584,7 @@ extern "C" int liquid_svm_read_solution(int cookie, const char* filename, size_t
 
   }catch(...){
     error("\nShould not happen!! liquid_svm_read_solution\n");
+    CLEAR_INTERRUPT
   }
 
   return cookie;
@@ -566,6 +611,7 @@ extern "C" void liquid_svm_clean(int cookie)
     }
   }catch(...){
     warning("\nShould not happen!! liquid_svm_R_clean\n");
+    CLEAR_INTERRUPT
     return;
   }
 }
