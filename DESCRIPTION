@@ -1,8 +1,8 @@
 Package: liquidSVM
 Type: Package
 Title: A Fast and Versatile SVM Package
-Version: 1.2.0
-Date: 2017-07-15
+Version: 1.2.1
+Date: 2017-07-19
 Author: Ingo Steinwart, Philipp Thomann
 Copyright: Ingo Steinwart, Philipp Thomann, Mohammad Farooq
 Maintainer: Philipp Thomann <philipp.thomann@mathematik.uni-stuttgart.de>
@@ -24,6 +24,6 @@ Enhances: mlr, ParamHelpers
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 NeedsCompilation: yes
-Packaged: 2017-07-15 08:23:11 UTC; thomapp
+Packaged: 2017-07-19 18:43:32 UTC; thomapp
 Repository: CRAN
-Date/Publication: 2017-07-15 21:25:33 UTC
+Date/Publication: 2017-07-19 21:00:12 UTC

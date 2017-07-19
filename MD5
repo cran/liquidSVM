@@ -1,4 +1,4 @@
-c1175e12ef499fa96802b6e643e2d3e2 *DESCRIPTION
+9259e271e72a07e32f03291f78898957 *DESCRIPTION
 84c013d5f68ba61b4afef73a98a2fac3 *NAMESPACE
 8ab6607e5312d98ddc768f15fe20c1c8 *R/kernel.R
 9c9e24142b2b086f4a7d1c2f193de152 *R/liquidData.R
@@ -7,10 +7,10 @@ c1175e12ef499fa96802b6e643e2d3e2 *DESCRIPTION
 7c17bc6058f97ca5e7b374a56267b4cb *R/model.R
 ea1c2c9bc978fc887cb21737a1da2023 *R/scenarios.R
 c311cbf782a16c9e676ce602748a52bd *README.md
-0aabe82fed88b9e65e974985e740bc79 *build/vignette.rds
+b585002dbb4a834cea4a592495ed6f72 *build/vignette.rds
 bcbbe298867b8fceb64689ac76ac234d *cleanup
 5c9f2cab9108f64bb0b402395b67c8cc *cleanup.win
-89b8fda02adc36594c051ca651d250f7 *configure
+de1fdf4fbf96d0f0cb8d033fe4976aa6 *configure
 dc96abbfa86ecf389204902005d646e4 *configure.win
 c1d8ebac2837a12974c3c7a53ebff006 *data/banana-bc.test.csv.gz
 30bd87b84d4e3d0df553011cea2d8dcf *data/banana-bc.train.csv.gz
@@ -21,7 +21,7 @@ b2398bcbba68b36501b30cde9a40b4e9 *data/reg-1d.test.csv.gz
 4ffa22cacc4eb3d7c4b12a15a5e1093a *inst/CITATION
 536b2139aa92a402a89cb2ce13d7b0ff *inst/doc/demo.R
 20bb0232a28b52b00c06b2739d4586a2 *inst/doc/demo.Rmd
-6a24352a91923c441f6f4eb96cee1b12 *inst/doc/demo.html
+534bc4e691d7ce82dfb2b21a157722e1 *inst/doc/demo.html
 6f85300d9f174070bb1492a5aac969d4 *inst/doc/demo_cache/banana-bc-roc-ls.fsol
 1b057ca0fa8254b45027565125c3f0fd *inst/doc/demo_cache/banana-mc.fsol
 59aa68ee6bbf0db83d4147caffe9795c *inst/doc/demo_cache/reg.fsol
@@ -32,7 +32,7 @@ d296e29c1775806302d17d05e572cfcb *inst/doc/demo_cache/result_npl.R
 a6ca72b37018e0783a53eac134a5e459 *inst/doc/demo_cache/result_roc.R
 4c132e6198195e1e910bd333b944622c *inst/doc/documentation.R
 ae7348bdfa0c8364b03c4841c5ce93bb *inst/doc/documentation.Rmd
-994d0b0a98bb9b2f4d6baf210607f016 *inst/doc/documentation.html
+d8ef3ca745ed003ae890cff070e0af9e *inst/doc/documentation.html
 da264a2759277ecb01553e1e4f32b147 *inst/doc/md/global-and-grid.md
 454e2ae7041dfe4ca9e344af2a392e69 *man/Configuration.Rd
 caeb478f15111ccd8e4e8b768acc6012 *man/banana.Rd
@@ -102,7 +102,7 @@ e1dda93133c2b0c1c0e56fe6de3470d4 *src/sources/shared/basic_types/loss_function.c
 7b85fc3dfa8d272cb06ff36c7ce7feba *src/sources/shared/basic_types/loss_function.h
 adebef71f819bdd9f157707f2c9d351b *src/sources/shared/basic_types/loss_function.ins.cpp
 ce190ef5db088ba0ca252e3b2b1d60df *src/sources/shared/basic_types/my_unordered_map_and_set.h
-49d8e91e5db5fb6295fbc34761327245 *src/sources/shared/basic_types/sample.cpp
+45a31c96104f52c734ab8735cd53c5c5 *src/sources/shared/basic_types/sample.cpp
 ef0e05698168e9019275b2bdf1d301f1 *src/sources/shared/basic_types/sample.h
 6b4bebe57ddf99154cec17af4b208518 *src/sources/shared/basic_types/sample.ins.cpp
 22deaf172324eb2a7caf9658691c64e7 *src/sources/shared/basic_types/sample_file_format.cpp
@@ -253,7 +253,7 @@ b5c8e8d808afe7ee85abdcaeb782ceb2 *src/sources/svm/training_validation/full_run_i
 2904010245de0da579b258b300019f5c *src/sources/svm/training_validation/full_run_info.h
 64bdd8c45efc883103be76dca7002a60 *src/sources/svm/training_validation/svm_cv_manager.h
 b6e535035b2fe6c848c3cc6f0c429e94 *src/sources/svm/training_validation/svm_cv_manager.ins.cpp
-e44e9bf28841e2153860b291db48f4ec *src/sources/svm/training_validation/svm_manager.cpp
+8d8c31e1b06f8f6b0fa2c707fc5f0f98 *src/sources/svm/training_validation/svm_manager.cpp
 41c7ec7a6e2a4a90d421161c99305354 *src/sources/svm/training_validation/svm_manager.h
 69d00e0748437cf198e72e3fd4dd9b06 *src/sources/svm/training_validation/svm_manager_control.cpp
 54a1619233e10cc66810ce28e42e98c0 *src/sources/svm/training_validation/svm_manager_control.h
@@ -265,14 +265,14 @@ dbaff8973fce7ee9ae3da3d30b186dc4 *src/sources/tools/create-tt.cpp
 e61340d6e2cef99628e5e89315d660b4 *src/sources/tools/data-stats.cpp
 6d05dd4eb683c684d8eed5d8ce0474a8 *src/sources/tools/liquid-info.cpp
 9a1b472cfcb2fbe2e3bc020126f9ba99 *src/sources/tools/scale-data.cpp
-e2225d786c245dc6d20329399a373a7d *tests/testthat.R
-e8076b89c6106673b8e565d774067930 *tests/testthat/test-bugs.R
+b2b1fabecb8136366650ddbe9bb6ac6d *tests/testthat.R
+93247e926e1e373817f0a90f0ad971bf *tests/testthat/test-bugs.R
 aa0ad87facda2d39bc5cc56c81ade1f6 *tests/testthat/test-kernel.R
 a3856d5e7e14de7ab7f0444f21055178 *tests/testthat/test-liquidData.R
-212d593f15969eff345e9faacb1960e4 *tests/testthat/test-mlr.R
-2289bd4f7a6b0179beb64cd805bfb748 *tests/testthat/test-model.R
-2e0b12c36e641ac5fdd0fcfe698ae43a *tests/testthat/test-quick.R
-bd3d6371133e40760451d1aa6faa5fb4 *tests/testthat/test-scenarios.R
+ae1e5713d031cdbe316a9393b5b43202 *tests/testthat/test-mlr.R
+41dbeda2f1702ddaa1521aa8c0456390 *tests/testthat/test-model.R
+e054e1f936833c5238ff5d9c9fc058bf *tests/testthat/test-quick.R
+da567cd9ff02961ecd40647b717dbfde *tests/testthat/test-scenarios.R
 20bb0232a28b52b00c06b2739d4586a2 *vignettes/demo.Rmd
 6f85300d9f174070bb1492a5aac969d4 *vignettes/demo_cache/banana-bc-roc-ls.fsol
 1b057ca0fa8254b45027565125c3f0fd *vignettes/demo_cache/banana-mc.fsol
