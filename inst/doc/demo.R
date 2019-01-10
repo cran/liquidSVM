@@ -409,11 +409,11 @@ plotROC(model.ls, banana$test, xlim=0:1,ylim=0:1,asp=1, type='l')
 points(false_positive_rate, detection_rate, pch='x', col='red')
 
 ## ----kernel-plot, eval=T, fig.width=4, fig.height=4----------------------
-covtype <- liquidData("covtype.1000")$train[1:100,-1]
-a <- kern(covtype)
+banana <- liquidData('banana-mc')$train[1:100,-1]
+a <- kern(banana)
 a[1:4,1:4]
-image(liquidSVM::kern(covtype, gamma=1.1, type="gauss"))
-image(liquidSVM::kern(covtype, gamma=1.1, type="poisson"))
+image(liquidSVM::kern(banana, gamma=1.1, type="gauss"))
+image(liquidSVM::kern(banana, gamma=1.1, type="poisson"))
 
 ## ----eval=F--------------------------------------------------------------
 #  # take 10% of training and testing data
