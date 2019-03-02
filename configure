@@ -24,7 +24,7 @@ if [ x$TARGET = x ]; then
       echo Since this is a sparc processor we set TARGET=default
       TARGET=default
     else
-      TARGET=native
+      TARGET=default
     fi
     ;;
   *)
@@ -54,7 +54,7 @@ echo Using target: $TARGET
 echo Using further args: $@
 
 if [ $TARGET = native ]; then
-  CXX_FLAGS="-O2 -march=native $CXX_FLAGS"
+  CXX_FLAGS="-O2 -mtune=native $CXX_FLAGS"
 elif [ $TARGET = generic ]; then
   CXX_FLAGS="-mtune=generic -msse2 -O3 $CXX_FLAGS"
 elif [ $TARGET = default ]; then

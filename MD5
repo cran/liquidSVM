@@ -1,5 +1,5 @@
-a4f2ae53c6ffbe8afc1500aeb0d82f8e *DESCRIPTION
-84c013d5f68ba61b4afef73a98a2fac3 *NAMESPACE
+cc16c80c53f44ac893cae141ead1a1c3 *DESCRIPTION
+ad9c8d6ba732f4a6f090fc1c419b1d6b *NAMESPACE
 b6795c4903da68a2d686e301e14062d7 *R/kernel.R
 819cfbebe8c8fbb2535ee8446cbdcc7a *R/liquidData.R
 52aca249c415a8908f2eb6db7cfcc5c2 *R/liquidSVM.R
@@ -10,7 +10,7 @@ c311cbf782a16c9e676ce602748a52bd *README.md
 e004e0aa05567b5e47f8e2f57f1d267f *build/vignette.rds
 bcbbe298867b8fceb64689ac76ac234d *cleanup
 5c9f2cab9108f64bb0b402395b67c8cc *cleanup.win
-de1fdf4fbf96d0f0cb8d033fe4976aa6 *configure
+a35e979f9dfaf2bb8d6b7f743d105a99 *configure
 dc96abbfa86ecf389204902005d646e4 *configure.win
 c1d8ebac2837a12974c3c7a53ebff006 *data/banana-bc.test.csv.gz
 30bd87b84d4e3d0df553011cea2d8dcf *data/banana-bc.train.csv.gz

@@ -61,3 +61,12 @@ importFrom(utils,read.table)
 importFrom(utils,str)
 importFrom(utils,write.table)
 useDynLib(liquidSVM, .registration = TRUE)
+
+if(getRversion() >= "3.6.0") {
+  S3method(mlr::trainLearner, "classif.liquidSVM")
+  S3method(mlr::trainLearner, "regr.liquidSVM")
+  S3method(mlr::predictLearner, "classif.liquidSVM")
+  S3method(mlr::predictLearner, "regr.liquidSVM")
+  S3method(mlr::makeRLearner, "classif.liquidSVM")
+  S3method(mlr::makeRLearner, "regr.liquidSVM")
+}
