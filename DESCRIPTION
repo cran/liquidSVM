@@ -1,11 +1,11 @@
 Package: liquidSVM
 Type: Package
 Title: A Fast and Versatile SVM Package
-Version: 1.2.2.1
-Date: 2019-01-10
+Version: 1.2.3
+Date: 2019-09-02
 Author: Ingo Steinwart, Philipp Thomann
 Copyright: Ingo Steinwart, Philipp Thomann, Mohammad Farooq
-Maintainer: ORPHANED
+Maintainer: Philipp Thomann <philipp.thomann@mathematik.uni-stuttgart.de>
 Description: Support vector machines (SVMs) and related kernel-based learning
     algorithms are a well-known class of machine learning algorithms, for
     non-parametric classification and regression.
@@ -22,12 +22,9 @@ Depends: R (>= 2.12.0), methods
 Suggests: knitr, rmarkdown, deldir, testthat
 Enhances: mlr, ParamHelpers
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.1
 NeedsCompilation: yes
-Packaged: 2019-03-02 14:57:34 UTC; ripley
+Packaged: 2019-09-03 12:11:38 UTC; philippthomann
 Repository: CRAN
-Date/Publication: 2019-03-02 15:44:27 UTC
-X-CRAN-Original-Maintainer: Philipp Thomann
-        <philipp.thomann@mathematik.uni-stuttgart.de>
-X-CRAN-Comment: Orphaned on 2019-03-02 as check issues were not
-        corrected despite reminder.
+Date/Publication: 2019-09-03 14:00:02 UTC
