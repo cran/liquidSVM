@@ -94,6 +94,7 @@ commonParamSet <- function() {
 
 #' @export
 #' @rdname mlr-liquidSVM
+#' @rawNamespace if(getRversion() >= "3.6.0") { S3method(mlr::makeRLearner, regr.liquidSVM) }
 makeRLearner.regr.liquidSVM <- function() {
   if(!requireNamespace('mlr', quietly=TRUE)) stop("this function needs mlr to be installed")
   if(!requireNamespace('ParamHelpers', quietly=TRUE)) stop("this function needs ParamHelpers to be installed")
@@ -113,6 +114,7 @@ makeRLearner.regr.liquidSVM <- function() {
 
 #' @export
 #' @rdname mlr-liquidSVM
+#' @rawNamespace if(getRversion() >= "3.6.0") { S3method(mlr::trainLearner, regr.liquidSVM) }
 trainLearner.regr.liquidSVM <- function(.learner, .task, .subset, .weights = NULL, #scaled, clip, kernel,
                                        partition_choice=0, partition_param=-1, #grid_choice, folds,
                                        ...) {
@@ -125,6 +127,7 @@ trainLearner.regr.liquidSVM <- function(.learner, .task, .subset, .weights = NUL
 
 #' @export
 #' @rdname mlr-liquidSVM
+#' @rawNamespace if(getRversion() >= "3.6.0") { S3method(mlr::predictLearner, regr.liquidSVM) }
 predictLearner.regr.liquidSVM <- function(.learner, .model, .newdata, ...) {
   if(!requireNamespace('mlr', quietly=TRUE)) stop("this function needs mlr to be installed")
   predict.liquidSVM(.model$learner.model, newdata = .newdata, ...)#[, 1L]
@@ -133,6 +136,7 @@ predictLearner.regr.liquidSVM <- function(.learner, .model, .newdata, ...) {
 
 #' @export
 #' @rdname mlr-liquidSVM
+#' @rawNamespace if(getRversion() >= "3.6.0") { S3method(mlr::makeRLearner, classif.liquidSVM) }
 makeRLearner.classif.liquidSVM <- function() {
   if(!requireNamespace('mlr', quietly=TRUE)) stop("this function needs mlr to be installed")
   if(!requireNamespace('ParamHelpers', quietly=TRUE)) stop("this function needs ParamHelpers to be installed")
@@ -155,6 +159,7 @@ makeRLearner.classif.liquidSVM <- function() {
 
 #' @export
 #' @rdname mlr-liquidSVM
+#' @rawNamespace if(getRversion() >= "3.6.0") { S3method(mlr::trainLearner, classif.liquidSVM) }
 trainLearner.classif.liquidSVM <- function(.learner, .task, .subset, .weights = NULL, #scaled, clip, kernel,
                                             partition_choice=0, partition_param=-1, #grid_choice, folds,
                                             ...) {
@@ -168,6 +173,7 @@ trainLearner.classif.liquidSVM <- function(.learner, .task, .subset, .weights = 
 
 #' @export
 #' @rdname mlr-liquidSVM
+#' @rawNamespace if(getRversion() >= "3.6.0") { S3method(mlr::predictLearner, classif.liquidSVM) }
 predictLearner.classif.liquidSVM <- function(.learner, .model, .newdata, ...) {
   if(!requireNamespace('mlr', quietly=TRUE)) stop("this function needs mlr to be installed")
   m <- .model$learner.model

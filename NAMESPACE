@@ -46,6 +46,12 @@ export(ttsplit)
 export(unserialize.liquidSVM)
 export(write.liquidData)
 export(write.liquidSVM)
+if(getRversion() >= "3.6.0") { S3method(mlr::makeRLearner, classif.liquidSVM) }
+if(getRversion() >= "3.6.0") { S3method(mlr::makeRLearner, regr.liquidSVM) }
+if(getRversion() >= "3.6.0") { S3method(mlr::predictLearner, classif.liquidSVM) }
+if(getRversion() >= "3.6.0") { S3method(mlr::predictLearner, regr.liquidSVM) }
+if(getRversion() >= "3.6.0") { S3method(mlr::trainLearner, classif.liquidSVM) }
+if(getRversion() >= "3.6.0") { S3method(mlr::trainLearner, regr.liquidSVM) }
 importFrom(graphics,abline)
 importFrom(graphics,plot)
 importFrom(graphics,points)
